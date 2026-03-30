@@ -1,0 +1,268 @@
+# Condition Taxonomy — Decay Constants and Persistence Profiles
+# EHR Temporal Validator
+#
+# Decay constants (λ) are derived from published clinical literature on
+# condition resolution rates and documentation lifecycle patterns.
+# Primary sources:
+#   - Fortin et al. (2012) "Revisiting the Distinct Condition Assumption"
+#     — multimorbidity persistence rates across condition categories
+#   - van den Bussche et al. (2011) chronic condition co-occurrence and
+#     longitudinal stability in primary care EHR data
+#   - MIMIC-III discharge diagnosis persistence analysis
+#     (Johnson et al. 2016, PhysioNet)
+#   - Singh et al. (2013) "Types and Origins of Diagnostic Errors"
+#     — acute condition resolution intervals
+#
+# Temporal decay formula: decay_factor = e^(-λ × t)
+# where t = months since last verification
+# Half-life = ln(2) / λ
+#
+# These are ILLUSTRATIVE starting values for Phase 1 calibration.
+# All values must be validated against real-world platform data
+# and clinical advisory input before production deployment.
+
+condition_categories:
+
+  acute_infectious:
+    description: "Infections with defined treatment course and expected resolution"
+    examples:
+      - pneumonia
+      - urinary tract infection
+      - wound infection
+      - cellulitis
+      - sepsis
+      - abscess
+    lambda: 0.35
+    half_life_months: 2.0
+    expected_resolution_days: 14
+    max_legitimate_persistence_months: 3
+    rationale: >
+      Acute infectious conditions are expected to resolve within days to weeks
+      with appropriate treatment. Persistence beyond 3 months without re-verification
+      is a strong copy-forward signal. Singh et al. (2013) found that diagnostic
+      errors in acute conditions frequently involve persistence of resolved diagnoses.
+    base_score_range: [0.45, 0.75]
+
+  acute_postsurgical:
+    description: "Complications and sequelae directly following a surgical procedure"
+    examples:
+      - seroma
+      - hematoma
+      - wound dehiscence
+      - anastomotic leak
+      - ileus
+      - post-operative pain
+      - surgical site infection
+    lambda: 0.28
+    half_life_months: 2.5
+    expected_resolution_days: 30
+    max_legitimate_persistence_months: 6
+    rationale: >
+      Post-surgical complications are time-limited by nature. Seroma typically
+      resolves within 4-6 weeks; hematoma within 2-4 weeks. Persistence beyond
+      6 months without documented clinical basis is highly suspicious for
+      copy-forward. Requires procedure anchor in record for legitimacy.
+    base_score_range: [0.40, 0.70]
+
+  episodic:
+    description: "Conditions that occur as discrete episodes and resolve between occurrences"
+    examples:
+      - deep vein thrombosis
+      - pulmonary embolism
+      - acute myocardial infarction
+      - stroke
+      - acute pancreatitis
+      - gout flare
+    lambda: 0.12
+    half_life_months: 5.8
+    expected_resolution_days: 90
+    max_legitimate_persistence_months: 12
+    rationale: >
+      Episodic conditions resolve but leave permanent historical record.
+      An active DVT should not persist indefinitely — but "history of DVT"
+      is legitimate. The pipeline must distinguish active vs. historical
+      framing. Without explicit status qualifier, decay applies to active
+      classification only.
+    base_score_range: [0.50, 0.80]
+
+  chronic_stable:
+    description: "Conditions that persist indefinitely with management; slow or no progression"
+    examples:
+      - hypertension
+      - hypothyroidism
+      - hyperlipidemia
+      - obesity
+      - osteoarthritis
+      - chronic back pain
+      - anxiety disorder
+      - depression
+    lambda: 0.04
+    half_life_months: 17.3
+    expected_resolution_days: null
+    max_legitimate_persistence_months: null
+    rationale: >
+      Chronic stable conditions are expected to persist. van den Bussche et al.
+      (2011) found that hypertension, diabetes, and hyperlipidemia persist in
+      >95% of patients across 5-year follow-up. Copy-forward detection for
+      these conditions must rely on text similarity and medication consistency
+      signals rather than temporal decay, which is nearly flat.
+    base_score_range: [0.55, 0.85]
+
+  chronic_progressive:
+    description: "Conditions that persist but evolve — staging and status should change over time"
+    examples:
+      - breast cancer
+      - lung cancer
+      - colon cancer
+      - lymphoma
+      - chronic kidney disease
+      - heart failure
+      - COPD
+      - Parkinson disease
+      - multiple sclerosis
+    lambda: 0.06
+    half_life_months: 11.6
+    expected_resolution_days: null
+    max_legitimate_persistence_months: null
+    rationale: >
+      Chronic progressive conditions persist but should show clinical updating —
+      staging changes, lab trends, treatment modifications. A cancer diagnosis
+      that appears verbatim across 12 consecutive notes with no staging update
+      is more suspicious than a hypertension diagnosis with the same pattern.
+      Decay is applied to the unchanged-documentation signal, not the diagnosis
+      itself.
+    base_score_range: [0.60, 0.88]
+    requires_staging: true
+    flag_if_unchanged_months: 6
+
+  autoimmune_complex:
+    description: "Chronic autoimmune and inflammatory conditions with slow evolution"
+    examples:
+      - rheumatoid arthritis
+      - lupus
+      - inflammatory bowel disease
+      - psoriasis
+      - ankylosing spondylitis
+      - multiple sclerosis
+    lambda: 0.03
+    half_life_months: 23.1
+    expected_resolution_days: null
+    max_legitimate_persistence_months: null
+    rationale: >
+      Autoimmune conditions are lifelong and evolve slowly. Documentation
+      patterns legitimately show high stability. Copy-forward detection
+      relies almost entirely on corroboration consistency and contradiction
+      signals rather than temporal decay.
+    base_score_range: [0.55, 0.82]
+
+  structural_anatomic:
+    description: "Permanent anatomic changes — surgical history, congenital conditions"
+    examples:
+      - mastectomy
+      - colostomy
+      - amputation
+      - organ transplant
+      - implantable device
+      - congenital heart defect
+      - spinal fusion
+    lambda: 0.01
+    half_life_months: 69.3
+    expected_resolution_days: null
+    max_legitimate_persistence_months: null
+    rationale: >
+      Structural and anatomic changes are permanent. Temporal decay is
+      near-zero. These entries should be preserved indefinitely regardless
+      of verification recency. Copy-forward is legitimate for these entries
+      and should not be flagged on temporal grounds alone.
+    base_score_range: [0.75, 0.95]
+    suppress_copy_forward_flag: true
+
+  diabetes:
+    description: "Diabetes mellitus — chronic but with active management markers"
+    examples:
+      - diabetes mellitus type 2
+      - diabetes mellitus type 1
+      - gestational diabetes
+    lambda: 0.04
+    half_life_months: 17.3
+    expected_resolution_days: null
+    max_legitimate_persistence_months: null
+    rationale: >
+      Treated as chronic stable. However, diabetes requires active medication
+      management (metformin, insulin, etc.). Medication consistency check
+      applies — if diabetes persists but associated medications disappear
+      from the record, contradiction penalty applies.
+    base_score_range: [0.55, 0.85]
+    requires_medication_anchor: true
+    medication_anchors:
+      - metformin
+      - insulin
+      - glipizide
+      - sitagliptin
+      - empagliflozin
+      - liraglutide
+
+
+# Source reliability base scores
+# Applied at ingestion before temporal decay or corroboration
+source_tiers:
+  tier_1:
+    description: "Machine-generated objective evidence — lab results, pathology, finalized imaging"
+    base_score_range: [0.85, 0.95]
+    examples:
+      - laboratory results with instrument timestamp
+      - pathology report finalized
+      - radiology report finalized
+  tier_2:
+    description: "Clinician-interpreted findings directly linked to objective evidence"
+    base_score_range: [0.70, 0.84]
+    examples:
+      - radiologist impression
+      - pathologist diagnosis
+      - specialist confirmed diagnosis with referenced objective findings
+  tier_3:
+    description: "Structured clinical entries — problem lists, diagnosis fields"
+    base_score_range: [0.45, 0.69]
+    examples:
+      - EHR problem list entry
+      - structured diagnosis field
+      - billing code entry
+    default_lower_bound: 0.45
+  tier_4:
+    description: "Narrative text — clinical notes, impressions, differentials"
+    base_score_range: [0.20, 0.44]
+    examples:
+      - physician note free text
+      - nursing note
+      - discharge summary narrative
+
+
+# Corroboration multipliers
+# Only applied when corroboration is genuinely independent
+corroboration:
+  tier_1_objective_evidence: 1.30
+  tier_2_independent_confirmation: 1.15
+  same_tier_independent_institution: 1.08
+  repeated_same_source: 1.00       # Not corroboration — repetition
+  shared_provenance_different_feed: 1.00  # Duplication-as-validation blocked
+  cap: 1.30                        # Maximum regardless of source count
+
+
+# Contradiction penalties
+contradiction:
+  tier_1_directly_contradicts: 0.50   # Net multiplier × 0.50
+  tier_2_interpretive_contradicts: 0.30
+  tier_3_different_institution: 0.15
+  tier_4_narrative_inconsistent: 0.08
+  application: sequential             # Multiple penalties applied sequentially
+
+
+# Operating thresholds
+thresholds:
+  confirmed: [0.80, 1.00]
+  probable: [0.60, 0.79]
+  provisional: [0.40, 0.59]
+  uncertain: [0.20, 0.39]
+  contradicted: [0.00, 0.19]
+  recall_target: 0.92
+  precision_target: 0.80

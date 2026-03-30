@@ -1,0 +1,186 @@
+# Company Context Configuration
+# EHR Temporal Validator — Pitch Customization
+#
+# Swap the active_company field and reference this file in outreach.
+# The pipeline code is identical across all companies.
+# Only the framing changes.
+
+active_company: ambience
+
+companies:
+
+  ambience:
+    name: "Ambience Healthcare"
+    product: "Chart Awareness — longitudinal record synthesis for ambient documentation"
+    emphasis_module: "copy_forward + temporal_validator"
+    pitch_angle: >
+      Chart Awareness ingests the longitudinal record to ground documentation
+      and coding decisions. This pipeline asks the prior question: is that
+      record internally consistent before we trust it? Copy-forwarded diagnoses,
+      stale medications, and temporally inconsistent complications all propagate
+      into longitudinal summaries as if they were ground truth.
+    key_problem: "Chart Awareness inherits whatever errors are already in the chart"
+    cold_email_hook: >
+      Chart Awareness is solving the right problem. But it shares a foundational
+      assumption with every longitudinal AI system: that the chart is worth trusting.
+    linkedin_hook: >
+      I've been thinking about what sits beneath Chart Awareness since the Feb 2026 launch.
+
+  codametrix:
+    name: "CodaMetrix"
+    product: "CMX CARE — NLP-driven autonomous coding from clinical documentation"
+    emphasis_module: "icd_divergence"
+    pitch_angle: >
+      Autonomous coding quality is bounded by documentation quality. When a
+      clinically significant diagnosis exists only in free text and was never
+      coded, CMX CARE cannot recover it — and when a billing code exists without
+      narrative support, it creates audit exposure. This pipeline surfaces both
+      failure modes before they reach the coding layer.
+    key_problem: "ICD-based coding misses what lives only in free text"
+    cold_email_hook: >
+      Autonomous coding is only as good as the documentation it reads.
+      I've been working on the gap between what clinicians write and what
+      gets coded — and it's larger than ICD fields suggest.
+    linkedin_hook: >
+      Built a pipeline that surfaces what's in clinical free text but never
+      coded — directly relevant to what CMX CARE is solving.
+
+  navina:
+    name: "Navina"
+    product: "AI clinical copilot — patient portrait from fragmented multi-source data"
+    emphasis_module: "confidence_scorer + corroboration"
+    pitch_angle: >
+      A patient portrait is only as trustworthy as the data it's assembled from.
+      When the same diagnosis appears in two institutional feeds that share a
+      common originating encounter, it's not independent corroboration — it's
+      duplication. This pipeline distinguishes genuine multi-source confirmation
+      from feed-level duplication before the portrait is assembled.
+    key_problem: "Duplication across feeds masquerades as corroboration"
+    cold_email_hook: >
+      Building a patient portrait from fragmented sources requires knowing
+      which sources to trust — and whether apparent corroboration is
+      genuinely independent or just the same data arriving twice.
+    linkedin_hook: >
+      Working on the corroboration vs. duplication problem in multi-source
+      EHR aggregation — maps directly to what Navina is building.
+
+  commure:
+    name: "Commure"
+    product: "AI-native RCM + ambient documentation platform across 60+ EHRs"
+    emphasis_module: "icd_divergence + temporal_validator"
+    pitch_angle: >
+      Revenue cycle integrity depends on documentation integrity. Coding errors
+      that originate from copy-forwarded diagnoses, temporally inconsistent
+      complications, and free-text conditions that never got coded are upstream
+      of the revenue cycle — this pipeline catches them at the documentation layer
+      before they become billing exposure.
+    key_problem: "RCM errors originate in documentation, not billing"
+    cold_email_hook: >
+      Revenue cycle management starts with documentation quality.
+      The errors that create audit risk and revenue leakage are usually
+      upstream — in the note, not the claim.
+    linkedin_hook: >
+      Thinking about the documentation-to-coding gap and how it creates
+      downstream RCM exposure — relevant to what Commure is building.
+
+  innovaccer:
+    name: "Innovaccer"
+    product: "Healthcare Intelligence Cloud — unified patient data for population health"
+    emphasis_module: "confidence_scorer + temporal_validator"
+    pitch_angle: >
+      Population health analytics and risk models are trained on aggregated
+      patient records. When individual records contain copy-forwarded diagnoses,
+      stale medications, or temporally inconsistent conditions, those errors
+      propagate into population-level models as signal. This pipeline scores
+      individual record trustworthiness before aggregation — a data quality
+      layer beneath the intelligence cloud.
+    key_problem: "Population models trained on copy-forwarded data are trained on noise"
+    cold_email_hook: >
+      Population health analytics are only as reliable as the individual
+      records they're built from. Data quality at the record level
+      determines model quality at the population level.
+    linkedin_hook: >
+      Working on record-level trustworthiness scoring for aggregated
+      EHR data — relevant to what Innovaccer's intelligence layer is doing.
+
+  komodo:
+    name: "Komodo Health"
+    product: "Patient journey analytics across 330M de-identified lives"
+    emphasis_module: "icd_divergence + confidence_scorer"
+    pitch_angle: >
+      Patient journey analytics depend on ICD codes as the longitudinal
+      signal. When a clinically significant condition exists only in free
+      text and was never coded, it's invisible to journey analysis —
+      a systematic blind spot at scale. This pipeline surfaces the
+      divergence between coded records and narrative documentation
+      across patient populations.
+    key_problem: "ICD-invisible conditions create systematic blind spots in journey analytics"
+    cold_email_hook: >
+      Patient journey analytics at scale have a structural blind spot:
+      conditions documented in clinical free text but never coded
+      are invisible to ICD-based trajectory analysis.
+    linkedin_hook: >
+      The gap between what clinicians write and what gets coded
+      is a systematic problem for journey analytics at scale.
+
+  clarify:
+    name: "Clarify Health Solutions"
+    product: "Predictive analytics and risk scoring for population health"
+    emphasis_module: "confidence_scorer + temporal_validator"
+    pitch_angle: >
+      Risk models and predictive analytics trained on EHR data inherit
+      whatever documentation errors are in those records. A temporally
+      decayed diagnosis that was copy-forwarded for 18 months looks identical
+      to an active confirmed diagnosis in structured fields. This pipeline
+      applies condition-specific confidence scoring to distinguish the two
+      before they reach the modeling layer.
+    key_problem: "Risk models cannot distinguish active diagnoses from copy-forwarded ones"
+    cold_email_hook: >
+      Predictive models trained on EHR data inherit documentation errors
+      as feature noise. The copy-forward problem is not just a data quality
+      issue — it's a model validity issue.
+    linkedin_hook: >
+      Thinking about how copy-forward propagation creates systematic
+      noise in features used for clinical risk models.
+
+  datavant:
+    name: "Datavant"
+    product: "Health data connectivity — record linkage and de-identification at scale"
+    emphasis_module: "corroboration + confidence_scorer"
+    pitch_angle: >
+      Record linkage creates a risk of compounding documentation errors.
+      When the same provisional diagnosis appears in two linked records
+      from different institutions that share a common source encounter,
+      linkage can create the appearance of independent corroboration
+      where none exists. This pipeline applies provenance-aware
+      corroboration scoring before linked records are treated as
+      independently confirming.
+    key_problem: "Record linkage can compound errors rather than resolve them"
+    cold_email_hook: >
+      Linking health records across institutions is powerful — but it
+      can also compound documentation errors if linked records share
+      a common originating encounter rather than representing
+      genuinely independent evidence.
+    linkedin_hook: >
+      Working on provenance-aware corroboration in multi-source
+      health record linkage — relevant to what Datavant is building.
+
+  cohere:
+    name: "Cohere Health"
+    product: "AI prior authorization — clinical intelligence for utilization management"
+    emphasis_module: "temporal_validator + icd_divergence"
+    pitch_angle: >
+      Prior authorization decisions depend on the accuracy of the clinical
+      record submitted. A denial that traces back to a documentation
+      inconsistency — a diagnosis coded without narrative support, or a
+      treatment that appears to precede its indication — creates avoidable
+      friction for patients and providers. This pipeline flags those
+      inconsistencies before submission.
+    key_problem: "Prior auth denials often trace to upstream documentation errors"
+    cold_email_hook: >
+      Prior authorization friction frequently originates in documentation
+      quality — not clinical necessity. The record submitted often contains
+      inconsistencies that could have been caught before submission.
+    linkedin_hook: >
+      Thinking about how documentation inconsistencies create
+      upstream prior auth friction — relevant to what Cohere is solving.
