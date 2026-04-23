@@ -1,5 +1,5 @@
 """
-Preflight — EHR Temporal Validator — FastAPI Application
+Preflight — FastAPI Application
 Apoorva Kolhatkar | MHI, University of Michigan
 
 A prototype REST API for validating longitudinal clinical EHR records.
@@ -75,7 +75,7 @@ app = FastAPI(
     contact={
         "name": "Apoorva Kolhatkar",
         "email": "apokol@umich.edu",
-        "url": "https://github.com/Apoorva2597/ehr-temporal-validator",
+        "url": "https://github.com/Apoorva2597/Preflight",
     },
     license_info={"name": "MIT"},
     lifespan=lifespan,
