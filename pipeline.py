@@ -1,5 +1,5 @@
 """
-EHR Temporal Validator — Main Pipeline
+Preflight — Main Pipeline
 Apoorva Kolhatkar | Michigan Medicine NLP Research
 
 Usage:
