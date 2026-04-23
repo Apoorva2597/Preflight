@@ -194,7 +194,6 @@ class ICDDivergenceAnalyzer:
         where the diagnosis is clearly documented but phrasing differs from
         the mapping key (e.g. 'underwent mastectomy' vs. 'mastectomy').
         """
-        import re
         text = diag_text.lower().strip()
         for key, codes in DIAGNOSIS_TO_ICD_MAP.items():
             key_l = key.lower()
