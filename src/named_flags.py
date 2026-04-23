@@ -40,7 +40,7 @@ def parse_date(s):
     if not s: return None
     for fmt in ["%Y-%m-%d", "%m/%d/%Y"]:
         try: return datetime.strptime(s, fmt)
-        except: continue
+        except ValueError: continue
     return None
 
 
