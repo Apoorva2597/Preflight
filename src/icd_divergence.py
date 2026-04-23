@@ -53,7 +53,7 @@ DIAGNOSIS_TO_ICD_MAP = {
     "mastectomy": ["Z90.1"],
     "seroma": ["T79"],
     "wound infection": ["T81.4"],
-    "deep vein thrombosis": ["I82"],
+  
 }
 
 # Reverse map: ICD prefix → diagnosis terms
@@ -211,23 +211,6 @@ class ICDDivergenceAnalyzer:
                 return [c[:3] for c in codes]
         return []
 
-    def _text_mentions_code(self, icd_prefix: str, free_text_diagnoses: list[str]) -> bool:
-        """
-        Check if there is narrative support for an ICD code.
-        Uses root-word matching — 'mastectomy' in notes covers Z90 code.
-        """
-        import re
-        expected_diags = ICD_TO_DIAGNOSIS_MAP.get(icd_prefix, [])
-        if not expected_diags:
-            return False
-        for expected in expected_diags:
-            key_words = [w for w in expected.lower().split() if len(w) > 4]
-            for ft in free_text_diagnoses:
-                if not key_words:
-                    continue
-                if all(re.search(r'\b' + re.escape(w) + r'\b', ft) for w in key_words[:2]):
-                    return True
-        return False
 
     def _first_seen_note(self, extracted_entities: list[dict], diag_text: str) -> Optional[str]:
         for note_data in extracted_entities:
