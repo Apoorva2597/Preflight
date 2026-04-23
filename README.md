@@ -27,11 +27,15 @@ Clinical notes (time-ordered)
         │
         ▼
  2. Entity Extraction        GLiNER NER (3-tier graceful degradation)
-                             Diagnoses, medications, procedures, complications
+                            Diagnoses, medications, procedures, complications
         │
         ▼
- 2b. LLM Status Resolution   Ollama (llama3.2) resolves longitudinal entity status
-                             via RAG over prior notes — is metformin actually active?
+ 2a. Longitudinal State      Per-entity risk profiling across all notes
+     Builder                 Five risk signals — entities below threshold 0.35
+                             never sent to LLM (clean charts = 0 Ollama calls)
+        │
+        ▼
+ 2b. LLM Status Resolution  Ollama (llama3.2) resolves longitudinal entity status
         │
         ▼
  3. Confidence Scoring       Composite: Base × Corroboration × Temporal Decay
@@ -85,8 +89,8 @@ Clinical notes (time-ordered)
 ## Quickstart
 
 ```bash
-git clone https://github.com/Apoorva2597/ehr-temporal-validator
-cd ehr-temporal-validator
+git clone https://github.com/Apoorva2597/Preflight
+cd Preflight
 pip install -r requirements.txt
 
 # Ollama (optional — enables LLM status resolution)
@@ -94,7 +98,7 @@ pip install -r requirements.txt
 ollama pull llama3.2
 
 # Run on included synthetic cohort
-python pipeline.py --input data/synthetic/expanded_patient_notes.json
+python pipeline.py --input data/synthetic/expanded_patient_notes.json --output outputs/
 
 # Run the API
 uvicorn api.main:app --reload
@@ -170,33 +174,41 @@ The trust score is a relative risk signal within a cohort, not a validated clini
 ## Project structure
 
 ```
-preflight/
-├── pipeline.py                    # CLI orchestrator
-├── entity_extractor.py            # GLiNER / BioClinicalBERT / regex (3-tier)
-├── ollama_resolver.py             # LLM status resolution (implements LLMResolver)
-├── llm_resolver.py                # Abstract base class — swap in any LLM backend
-├── confidence_scorer.py           # Composite scoring with temporal decay
-├── temporal_validator.py          # Ordering consistency checks
-├── icd_divergence.py              # Free-text vs. coded comparison
-├── longitudinal_state_builder.py  # Pre-filters entities for LLM resolution
-├── freshness.py                   # Per-condition staleness analysis
-├── care_gaps.py                   # Missing follow-up detection
-├── named_flags.py                 # Medication conflicts, copy-forward flags
-├── fusion.py                      # Structured vs. free-text conflicts
-├── top3_engine.py                 # Ranked issue selection
+Preflight/
+├── pipeline.py                        # CLI orchestrator
+├── preflight_demo.html                # Interactive demo — open in browser
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── src/
+│   ├── entity_extractor.py            # GLiNER / BioClinicalBERT / regex (3-tier)
+│   ├── longitudinal_state_builder.py  # Stage 2a: pre-filters entities for LLM
+│   ├── ollama_resolver.py             # LLM status resolution (implements LLMResolver)
+│   ├── llm_resolver.py               # Abstract base — swap in any LLM backend
+│   ├── confidence_scorer.py          # Composite scoring with temporal decay
+│   ├── temporal_anchor.py            # Timeline construction
+│   ├── temporal_validator.py         # Ordering consistency checks
+│   ├── icd_divergence.py             # Free-text vs. coded comparison
+│   ├── freshness.py                  # Per-condition staleness analysis
+│   ├── care_gaps.py                  # Missing follow-up detection
+│   ├── named_flags.py                # Medication conflicts, copy-forward flags
+│   ├── fusion.py                     # Structured vs. free-text conflicts
+│   ├── top3_engine.py                # Ranked issue selection
+│   ├── clinical_output.py
+│   ├── timeline_output.py
+│   └── compare.py
 ├── api/
-│   ├── main.py                    # FastAPI app with lifespan startup
-│   ├── routes.py                  # /validate, /health, /schema
-│   ├── services.py                # Pipeline adapter (shared model instances)
-│   └── schemas.py                 # Pydantic I/O models
+│   ├── main.py                        # FastAPI app with lifespan startup
+│   ├── routes.py                      # /validate, /health, /schema
+│   ├── services.py                    # Pipeline adapter (shared model instances)
+│   └── schemas.py                     # Pydantic I/O models
 ├── data/
 │   └── synthetic/
-│       └── expanded_patient_notes.json   # 4-patient synthetic cohort
-├── condition_taxonomy.yaml        # Decay constants and condition categories
-├── preflight_demo.html                  # Interactive demo — open in browser
-└── requirements.txt
+│       └── expanded_patient_notes.json  # 4-patient synthetic cohort
+├── config/
+├── tests/
+└── examples/
 ```
-
 ---
 
 ## Background
