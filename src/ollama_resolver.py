@@ -1,5 +1,5 @@
 """
-ollama_resolver.py — Preflight — EHR Temporal Validator
+ollama_resolver.py — Preflight
 Apoorva Kolhatkar | Michigan Medicine NLP Research
 
 LLM-based longitudinal entity status resolution using local Ollama inference.
@@ -77,6 +77,7 @@ import json
 import re
 import urllib.request
 import urllib.error
+import time
 from typing import Optional
 
 from llm_resolver import LLMResolver
@@ -122,7 +123,6 @@ def _ollama_generate(prompt: str, base_url: str = OLLAMA_BASE_URL,
     Returns None only after all retries are exhausted — pipeline continues
     with GLiNER-only status labels, no crash.
     """
-    import time
 
     payload = json.dumps({
         "model": model,
