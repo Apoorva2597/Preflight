@@ -1,0 +1,109 @@
+{
+  "patient_id": "SYNTH_001",
+  "icd_codes": [
+    "C50.912",
+    "Z90.11",
+    "E11.9",
+    "I10"
+  ],
+  "notes": [
+    {
+      "note_id": "note_1",
+      "date": "2023-03-15",
+      "category": "Operative Note",
+      "text": "Patient is a 52-year-old female who underwent left breast mastectomy with immediate tissue expander placement for invasive ductal carcinoma. Sentinel node biopsy performed, 0/3 nodes positive. Procedure was completed without complication. Patient has a history of diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. Patient tolerated procedure well and transferred to recovery in stable condition."
+    },
+    {
+      "note_id": "note_2",
+      "date": "2023-03-18",
+      "category": "Nursing Note",
+      "text": "Post-operative day 3 following left mastectomy and tissue expander placement. Patient reports pain 4/10, managed with oxycodone 5mg q6h PRN. Wound site clean and dry. No signs of infection. Drains patent and productive. Patient has a history of diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. Ambulating with assistance. Foley removed. Voiding adequately. Blood glucose within acceptable range."
+    },
+    {
+      "note_id": "note_3",
+      "date": "2023-03-21",
+      "category": "Discharge Summary",
+      "text": "DISCHARGE DIAGNOSIS: Invasive ductal carcinoma, left breast, status post left mastectomy with tissue expander placement. HOSPITAL COURSE: Patient underwent uncomplicated left mastectomy with immediate tissue expander placement. Post-operative course was uneventful. PAST MEDICAL HISTORY: Diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. DISCHARGE MEDICATIONS: Oxycodone 5mg q6h PRN pain, metformin 1000mg twice daily, lisinopril 10mg daily, cephalexin 500mg four times daily for 7 days. FOLLOW-UP: Plastic surgery in 2 weeks, oncology in 3 weeks."
+    },
+    {
+      "note_id": "note_4",
+      "date": "2023-04-04",
+      "category": "Clinic Note",
+      "text": "SUBJECTIVE: Two-week post-operative visit following left mastectomy. Patient reports swelling in the left breast area over the past week. Denies fever, chills. Wound otherwise without erythema or drainage. OBJECTIVE: Examination reveals a fluctuant collection at the lateral aspect of the incision consistent with seroma formation. Aspiration performed, 45mL serous fluid removed. ASSESSMENT AND PLAN: Seroma, left breast, status post mastectomy. Will continue to monitor. Tissue expander fill scheduled for next visit. Chronic conditions stable \u2014 diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily."
+    },
+    {
+      "note_id": "note_5",
+      "date": "2023-05-10",
+      "category": "Clinic Note",
+      "text": "SUBJECTIVE: Six-week follow-up. Seroma resolved after aspiration. Patient reports GI discomfort, nausea, and loose stools over the past several weeks, which she attributes to metformin. She states she stopped taking metformin approximately two weeks ago and has not restarted. Blood glucose has been running higher at home, readings in the 180-220 range. OBJECTIVE: Wound healed without complication. Tissue expander fill performed today, 60mL added. ASSESSMENT AND PLAN: 1. Left breast, status post mastectomy \u2014 tissue expander fills ongoing. 2. Diabetes mellitus type 2 \u2014 metformin self-discontinued due to GI intolerance. Will discuss alternative agent at next visit, consider switching to sitagliptin. Blood glucose logs reviewed. 3. Hypertension \u2014 lisinopril 10mg daily, BP 132/84 today, acceptable."
+    },
+    {
+      "note_id": "note_6",
+      "date": "2023-06-15",
+      "category": "Clinic Note",
+      "text": "SUBJECTIVE: Patient returns for routine follow-up and tissue expander fill. She reports doing well overall. Denies pain at the expander site. Reports mood has been low since the diagnosis and surgery. Denies active suicidal ideation. Appetite reduced. Sleep disrupted. OBJECTIVE: Expander fill performed, 60mL added. Wound site well-healed. Blood glucose reviewed \u2014 readings have improved since starting sitagliptin 100mg daily last month, now averaging 130-150 mg/dL fasting. ASSESSMENT AND PLAN: 1. Left breast reconstruction ongoing \u2014 expander fills continuing on schedule. 2. Diabetes mellitus type 2 \u2014 sitagliptin 100mg daily initiated last visit following metformin self-discontinuation. Glucose trending toward goal. Metformin 1000mg BID remains listed on active medication list \u2014 not removed at time of transition. 3. Hypertension managed with lisinopril 10mg daily, BP 128/80 today. 4. Depression \u2014 patient reporting low mood, anhedonia, and sleep disruption since diagnosis. PHQ-9 administered, score 12, consistent with moderate depression. Referring to psychiatry. Discussed starting sertraline 50mg daily, patient agrees."
+    },
+    {
+      "note_id": "note_7",
+      "date": "2023-07-20",
+      "category": "Clinic Note",
+      "text": "SUBJECTIVE: Patient presents for final expander fill prior to exchange procedure. Reports mood improved since starting sertraline. Tolerating medication well. Denies GI side effects. Blood glucose stable on sitagliptin. OBJECTIVE: Final tissue expander fill performed, 60mL added. Total fill volume 240mL. Exchange to implant scheduled for next month. ASSESSMENT AND PLAN: 1. Left breast reconstruction \u2014 exchange to implant scheduled. 2. Diabetes mellitus type 2 \u2014 glucose well-controlled on sitagliptin 100mg daily. Metformin 1000mg twice daily remains on active medication list per prior documentation \u2014 patient has not taken metformin since May 2023. 3. Hypertension managed with lisinopril 10mg daily. 4. Depression \u2014 patient responding well to sertraline 50mg daily. Will continue."
+    },
+    {
+      "note_id": "note_8",
+      "date": "2023-10-05",
+      "category": "Clinic Note",
+      "text": "SUBJECTIVE: Three-month post-exchange follow-up. Patient reports excellent cosmetic result and is pleased with outcome. Mood is significantly improved. Denies depressive symptoms. Sertraline continued. OBJECTIVE: Implant well-positioned bilaterally. No complications. HbA1c 7.1% at today's visit, improved from 8.4% at time of metformin discontinuation. ASSESSMENT AND PLAN: 1. Left breast reconstruction \u2014 complete, excellent result. 2. Diabetes mellitus type 2 \u2014 HbA1c 7.1%, well-controlled on sitagliptin 100mg daily. Medication list continues to show metformin 1000mg BID as active \u2014 not reconciled since patient self-discontinued in May 2023. 3. Hypertension managed with lisinopril 10mg daily, BP 126/78 today. 4. Depression \u2014 in remission on sertraline 50mg daily. Continue current regimen."
+    }
+  ],
+  "structured_data": {
+    "medications": [
+      {
+        "medication": "metformin",
+        "dose": "1000mg",
+        "frequency": "BID",
+        "status": "active",
+        "source": "medication_list"
+      },
+      {
+        "medication": "lisinopril",
+        "dose": "10mg",
+        "frequency": "daily",
+        "status": "active",
+        "source": "medication_list"
+      },
+      {
+        "medication": "oxycodone",
+        "dose": "5mg",
+        "frequency": "q6h PRN",
+        "status": "active",
+        "source": "medication_list"
+      },
+      {
+        "medication": "sitagliptin",
+        "dose": "100mg",
+        "frequency": "daily",
+        "status": "active",
+        "source": "medication_list"
+      }
+    ],
+    "diagnoses": [
+      {
+        "description": "Invasive ductal carcinoma, left breast",
+        "icd_code": "C50.912"
+      },
+      {
+        "description": "Acquired absence of left breast",
+        "icd_code": "Z90.11"
+      },
+      {
+        "description": "Type 2 diabetes mellitus",
+        "icd_code": "E11.9"
+      },
+      {
+        "description": "Essential hypertension",
+        "icd_code": "I10"
+      }
+    ]
+  }
+}

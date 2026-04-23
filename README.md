@@ -1,201 +1,210 @@
-# EHR Temporal Validator
-### Copy-forward detection and longitudinal contradiction flagging in clinical notes
+# Preflight
+**EHR Temporal Validator — Pre-Generation Chart Consistency Engine**
 
 ---
 
-## The problem
+## Why this exists
 
-Chart Awareness and longitudinal summarization tools are meaningful steps forward in clinical AI. But they share a foundational assumption: that the chart is worth trusting.
+I spent years as a Physical Therapist writing clinical notes. A significant portion of that time was not spent on patient care — it was spent reconstructing what had actually happened to a patient by reading through a record that was never designed to tell a coherent story.
 
-In practice, it often isn't.
+EHR architecture is encounter-first. Each note documents *this visit*. The longitudinal picture — what medications are actually active, which diagnoses have resolved, what changed between visit 4 and visit 8 — has to be assembled manually, and it frequently isn't. The result is copy-forward propagation, stale medication lists, and conditions documented only in free text that never make it into the coded record.
 
-As a Physical Therapist writing ICU and post-operative notes, I noticed that even careful clinicians struggled to reconstruct a patient's longitudinal story from prior documentation. Not because the notes were careless — but because EHR architecture is encounter-first, not patient-first. Each note is written to document *this visit*, not to maintain a coherent timeline.
+This matters now because clinical AI systems are being built on top of that data. Ambient scribing tools, chart summarization systems, and conditions advisors all ingest the EHR and generate output. If the chart is internally inconsistent — if metformin is listed as active three notes after the patient stopped taking it — the AI system inherits that error and presents it with the confidence of a system that has "read the full record."
 
-The result:
-- **Copy-forward propagation** — a diagnosis documented in visit 1 silently persists across visits 2 through 12, even after it resolves or changes
-- **Stale medications** — active med lists that haven't reflected reality for months
-- **Free-text diagnoses** — conditions documented narratively but never coded, invisible to ICD-based longitudinal queries
-- **Temporal contradictions** — a complication mentioned without a corresponding procedure, or a treatment that precedes the condition it treats
-
-When a downstream AI system ingests this chart for summarization or coding support, it inherits all of these errors — and presents them with the confidence of a system that has "read the full record."
-
-This project builds the validation layer that should sit beneath longitudinal summarization: **does the chart tell a temporally consistent story?**
+Preflight is an attempt at the validation layer that sits beneath longitudinal generation: **before you summarize the chart, check whether the chart is worth trusting.**
 
 ---
 
-## What this pipeline does
+## What the pipeline does
 
-Given a sequence of clinical notes for a single patient, the pipeline:
-
-1. **Anchors a temporal backbone** — extracts dated clinical events (admissions, procedures, diagnoses, discharge) and orders them into a patient timeline
-2. **Extracts clinical entities from free text** — diagnoses, procedures, medications, complications — using rule-based NLP and BioClinicalBERT, including entities that were never structured or coded
-3. **Detects copy-forward propagation** — flags entities that appear verbatim or near-verbatim across consecutive notes with no documented clinical basis for persistence
-4. **Validates temporal consistency** — checks that complications follow their associated procedures, treatments follow their associated diagnoses, and medication lists reflect documented changes
-5. **Compares free-text extraction to ICD codes** — surfaces diagnoses present in narrative text but absent from the coded record, and vice versa
-6. **Outputs a trust-annotated timeline** — a per-patient longitudinal view with confidence flags on each entity
-
----
-
-## Real-world grounding
-
-This pipeline implements an original diagnostic confidence scoring architecture designed by the author — informed by two distinct real-world research contexts:
-
-**Michigan Medicine (2025):** Rule-based NLP pipeline extracting surgical staging from 12,000+ breast reconstruction clinical notes, constructing temporal timelines of surgical events, and extracting complications and treatments relative to surgical stage. That work revealed a consistent pattern: when a diagnosis or complication appeared only in free text and was never coded, it was frequently missed by ICD-based longitudinal queries — yet often clinically significant.
-
-**Production health platform context (2025–2026):** Designed a diagnostic reliability scoring architecture for a consumer health platform aggregating multi-source EHR records — where the core challenge was distinguishing legitimate clinical persistence from erroneous copy-forward propagation across institutional feeds. This informed the weighted composite confidence model implemented here.
-
-The composite scoring formula — `Base Score × Corroboration Multiplier × Temporal Decay Factor × (1 − Contradiction Penalty)` — is an independently derived framework, not a specific system implementation. Decay constants are calibrated from published clinical literature on condition resolution rates (Fortin et al. 2012; van den Bussche et al. 2011; Singh et al. 2013).
-
-**This repository is a public architecture demonstration**, validated on synthetic notes with known ground truth. MIMIC-III integration is supported with credentialed PhysioNet access (see `data/README.md`).
-
----
-
-## Pipeline architecture
+Given a sequence of clinical notes for a single patient, Preflight runs a 10-stage pipeline:
 
 ```
-clinical_notes (per patient, time-ordered)
+Clinical notes (time-ordered)
         │
         ▼
-┌─────────────────────┐
-│  1. Temporal        │  Extract dates, events, admissions
-│     Anchoring       │  → patient_timeline.json
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  2. Entity          │  Rule-based regex + BioClinicalBERT NER
-│     Extraction      │  → diagnoses, procedures, meds, complications
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  3. Composite       │  Base Score × Corroboration Multiplier
-│     Confidence      │  × Temporal Decay × (1 − Contradiction Penalty)
-│     Scoring         │  Condition-category-specific decay (7 categories)
-└────────┬────────────┘  Copy-forward suspicion weighted by condition type
-         │               → scored_entities.json (per-entity confidence + audit trail)
-         ▼
-┌─────────────────────┐
-│  4. Temporal        │  Procedure → complication ordering
-│     Validation      │  Treatment → diagnosis ordering
-└────────┬────────────┘  Resolved diagnosis reappearance detection
-         │
-         ▼
-┌─────────────────────┐
-│  5. ICD Divergence  │  Free-text entities vs. coded fields
-│     Analysis        │  → coding_gap_report.json
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│  6. Trust-Annotated │  Per-patient timeline with confidence scores,
-│     Timeline Output │  classifications, and audit trail
-└─────────────────────┘  → timeline_output.html / .json
+ 1. Temporal Anchoring       Extract dates, events, procedures → patient timeline
+        │
+        ▼
+ 2. Entity Extraction        GLiNER NER (3-tier graceful degradation)
+                             Diagnoses, medications, procedures, complications
+        │
+        ▼
+ 2b. LLM Status Resolution   Ollama (llama3.2) resolves longitudinal entity status
+                             via RAG over prior notes — is metformin actually active?
+        │
+        ▼
+ 3. Confidence Scoring       Composite: Base × Corroboration × Temporal Decay
+                             × (1 − Contradiction Penalty)
+                             Condition-specific decay constants (7 categories)
+        │
+        ▼
+ 4. Temporal Validation      Procedure → complication ordering
+                             Treatment → diagnosis ordering
+                             Resolved condition reappearance
+        │
+        ▼
+ 5. ICD Divergence           Free-text entities vs. coded fields
+                             Surfaces diagnoses present in notes, absent from record
+        │
+        ▼
+ 6. Freshness Analysis       Per-condition staleness — when was this last
+                             clinically re-assessed?
+        │
+        ▼
+ 7. Care Gap Detection       Missing expected follow-up given documented conditions
+        │
+        ▼
+ 8. Named Flag Detection     Medication conflicts, anticoagulant overlaps,
+                             high copy-forward suspicion entities
+        │
+        ▼
+ 9. Fusion Analysis          Structured data vs. free-text conflicts
+        │
+        ▼
+10. Top 3 Issues + Trust     Ranked findings with structured signal output
+    Score Output             Chart reliability score (0–1)
 ```
 
-### Confidence scoring — key design decisions
+**Output is a structured signal, not a directive.** Each finding includes a recommended signal — `{"action": "suppress", "target": "warfarin", "reason": "transition_documented"}` — for the consuming AI system to act on. Preflight surfaces the risk; the downstream system decides what to do with it.
 
-**Why multiplicative, not additive?** Additive scoring allows a single strong component (e.g. high base score) to dominate the final result. Multiplicative interaction ensures that a highly reliable source with a strong temporal contradiction still produces a low composite score.
+---
 
-**Why condition-specific decay?** A seroma persisting 6 months post-surgery is suspicious. Hypertension persisting 6 months is expected. A single global decay rate cannot distinguish the two. Seven condition categories with empirically derived decay constants handle this.
+## Key design decisions
 
-**Why is chronic stable hypertension not flagged by copy-forward detection?** The copy-forward suspicion score is weighted by the condition's decay constant (λ). Hypertension (λ=0.04) gets a suspicion weight of ~0.11. Seroma (λ=0.28) gets a suspicion weight of ~0.80. Same text similarity → very different suspicion scores. That's the design.
+**Condition-specific temporal decay.** A seroma persisting 6 months post-surgery is suspicious. Hypertension persisting 6 months is expected. A global decay rate cannot distinguish the two. Seven condition categories with decay constants calibrated from published literature (Fortin et al. 2012; van den Bussche et al. 2011; Singh et al. 2013) handle this. Hypertension (λ=0.04) generates near-zero copy-forward suspicion on stable documentation. Seroma (λ=0.28) flags at high suspicion with the same text similarity.
 
-**What the pipeline cannot determine autonomously:** Whether a chronic condition's persistence is legitimate or erroneous ultimately requires clinical judgment. The pipeline surfaces the cases that warrant review — it does not make the final call. This is intentional.
+**Multiplicative confidence, not additive.** Additive scoring lets a strong base score mask a real contradiction. Multiplicative interaction ensures a highly corroborated entity with a documented temporal violation still produces a low composite score.
+
+**LLM layer is swap-able by design.** `OllamaResolver` implements an abstract `LLMResolver` interface. Replacing Ollama with a Claude API call, an Azure OpenAI in-VPC deployment, or a fine-tuned clinical model is a one-class change. No pipeline logic touches the resolver directly.
+
+**Graceful degradation throughout.** If GLiNER is unavailable, the pipeline falls back to BioClinicalBERT, then to rule-based regex. If Ollama is unavailable, GLiNER status labels are used directly. No stage fails silently.
 
 ---
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/apoorvakolhatkar/ehr-temporal-validator
+git clone https://github.com/Apoorva2597/ehr-temporal-validator
 cd ehr-temporal-validator
 pip install -r requirements.txt
 
-# Run on synthetic notes (included)
-python src/pipeline.py --input data/synthetic/sample_patient_notes.json --output outputs/
+# Ollama (optional — enables LLM status resolution)
+# Install from https://ollama.com, then:
+ollama pull llama3.2
 
-# Run on MIMIC-III (requires credentialed access)
-python src/pipeline.py --input /path/to/mimic/noteevents.csv --mimic --output outputs/
+# Run on included synthetic cohort
+python pipeline.py --input data/synthetic/expanded_patient_notes.json
+
+# Run the API
+uvicorn api.main:app --reload
+# Docs at http://localhost:8000/docs
 ```
 
 ---
 
-## Evaluation design
+## API
 
-The pipeline is evaluated on synthetic notes with **known ground truth** — deliberately constructed to represent documented EHR pathologies (copy-forward, stale meds, free-text burial). This is a **controlled methodology demonstration**, not a generalizability claim.
+```http
+POST /validate
+Content-Type: application/json
 
-| Metric | What it measures |
-|--------|-----------------|
-| Entity extraction F1 | Precision/recall vs. annotated ground truth |
-| Copy-forward detection rate | % of propagated entities correctly flagged |
-| Temporal contradiction rate | % of ordering violations detected |
-| ICD divergence recall | % of free-text diagnoses missing from coded record |
-| False positive rate | % of legitimate persistence incorrectly flagged |
+{
+  "patient_id": "PT_001",
+  "notes": [
+    { "note_id": "note_1", "date": "2023-03-15", "category": "Progress Note",
+      "text": "Patient seen for follow-up. Metformin 500mg daily, continuing." },
+    { "note_id": "note_5", "date": "2023-07-22", "category": "Progress Note",
+      "text": "Patient reports stopping metformin 3 months ago due to GI side effects." }
+  ],
+  "icd_codes": ["E11.9", "I10"]
+}
+```
 
-**Honest limitation:** Synthetic ground truth introduces selection bias — the pipeline catches what we built it to catch. Real-world validation on MIMIC-III or a credentialed clinical dataset is the necessary next step. The methodology section documents what that evaluation would look like.
+Returns: chart trust score, top 3 issues, ICD divergence summary, temporal contradictions, named flags, record freshness.
 
 ---
 
-## Limitations and validation roadmap
+## Where Preflight fits in the clinical AI stack
 
-**Current limitations:**
-- Synthetic data only — no claim of generalizability to real EHR populations
-- Rule-based temporal anchoring is brittle to non-standard date formats and implicit temporal references ("last week", "at prior visit")
-- Copy-forward detection via cosine similarity has high false positive risk for legitimately stable chronic conditions
-- BioClinicalBERT NER performance varies significantly by specialty
+The current state of clinical AI hallucination research is almost entirely focused on **downstream detection** — catching what the model invented after it generated output. VeriFact (NEJM AI, 2025), Abridge's confabulation elimination system, and LLM-as-a-Judge frameworks all operate on generated text, checking claims against source material.
 
-**Validation roadmap:**
-1. MIMIC-III discharge summaries (PhysioNet credentialed access) — diverse patient population, real copy-forward patterns
-2. Specialty-stratified evaluation — copy-forward behavior differs significantly between primary care, oncology, and surgical notes
-3. Human clinical annotation — ground truth for temporal contradiction detection requires clinician review, not automated labeling
-4. Longitudinal stability analysis — distinguishing legitimate persistence (stable chronic condition) from problematic copy-forward (resolved condition persisting)
+These are important. But they share a blind spot: **they assume the source material is trustworthy.**
+
+Copy-forward propagation means an AI summarization system can generate a perfectly faithful summary of documentation that was clinically wrong for months before the AI touched it. A 2025 npj Digital Medicine study found a 1.47% hallucination rate in LLM clinical note generation — but that metric doesn't capture accurate-but-stale content that was wrong at the source. That failure mode is invisible to downstream detection.
+
+Preflight addresses the upstream problem. It validates chart consistency before generation runs, so that downstream systems are working from the most reliable version of the record available.
+
+The two approaches are complementary, not competing:
+- **Upstream (Preflight):** Did the chart tell a consistent story before we summarized it?
+- **Downstream (VeriFact, Abridge):** Did the model accurately represent what the chart said?
+
+Both are necessary. Neither is sufficient alone.
+
+---
+
+## Honest evaluation framing
+
+This pipeline is demonstrated on a synthetic cohort of 4 patients, deliberately constructed to exhibit the full range of failure modes the system detects — copy-forward, stale medications, temporal ordering violations, uncoded diagnoses.
+
+**What this validates:** The architecture correctly identifies planted errors in a controlled setting. The pipeline components — entity extraction, temporal reasoning, ICD divergence — behave as designed.
+
+**What this does not validate:** False positive rates on clean records with legitimate clinical stability. Recall on real clinical language, which is highly variable by specialty and institution. Generalizability to real EHR populations.
+
+**What honest real-world validation would look like:** MIMIC-III discharge summaries (40,000+ ICU records, PhysioNet credentialed access) with specialty-stratified evaluation and clinician annotation for ground truth on temporal contradiction detection. That is the defined next step — the architecture is designed with that evaluation in mind.
+
+The trust score is a relative risk signal within a cohort, not a validated clinical accuracy metric. Penalty weights are calibrated to synthetic ground truth and would require recalibration against annotated real data.
+
+---
+
+## Limitations
+
+- **Synthetic data only** — no generalizability claim to real EHR populations
+- **Copy-forward detection** has elevated false positive risk for legitimately stable chronic conditions (mitigated by condition-specific decay constants, not eliminated)
+- **ICD divergence recall** on real clinical language is unknown — free-text to code mapping using GLiNER works on canonical terms; clinical language variation by specialty and provider is not characterized
+- **Temporal anchoring** is brittle to non-standard date formats and implicit references ("at prior visit", "last month")
+- **Trust score weights** are heuristic, not derived from clinical outcomes data
 
 ---
 
 ## Project structure
 
 ```
-ehr-temporal-validator/
-├── README.md
-├── requirements.txt
-├── src/
-│   ├── pipeline.py           # Main orchestrator
-│   ├── temporal_anchor.py    # Date/event extraction
-│   ├── entity_extractor.py   # Rule-based + BioClinicalBERT NER
-│   ├── copy_forward.py       # Propagation detection
-│   ├── temporal_validator.py # Ordering consistency checks
-│   ├── icd_divergence.py     # Free-text vs. coded comparison
-│   └── timeline_output.py    # Visualization and reporting
+preflight/
+├── pipeline.py                    # CLI orchestrator
+├── entity_extractor.py            # GLiNER / BioClinicalBERT / regex (3-tier)
+├── ollama_resolver.py             # LLM status resolution (implements LLMResolver)
+├── llm_resolver.py                # Abstract base class — swap in any LLM backend
+├── confidence_scorer.py           # Composite scoring with temporal decay
+├── temporal_validator.py          # Ordering consistency checks
+├── icd_divergence.py              # Free-text vs. coded comparison
+├── longitudinal_state_builder.py  # Pre-filters entities for LLM resolution
+├── freshness.py                   # Per-condition staleness analysis
+├── care_gaps.py                   # Missing follow-up detection
+├── named_flags.py                 # Medication conflicts, copy-forward flags
+├── fusion.py                      # Structured vs. free-text conflicts
+├── top3_engine.py                 # Ranked issue selection
+├── api/
+│   ├── main.py                    # FastAPI app with lifespan startup
+│   ├── routes.py                  # /validate, /health, /schema
+│   ├── services.py                # Pipeline adapter (shared model instances)
+│   └── schemas.py                 # Pydantic I/O models
 ├── data/
-│   ├── README.md             # MIMIC-III access instructions
 │   └── synthetic/
-│       └── sample_patient_notes.json
-├── notebooks/
-│   └── methodology_walkthrough.ipynb
-├── tests/
-│   └── test_pipeline.py
-└── outputs/
+│       └── expanded_patient_notes.json   # 4-patient synthetic cohort
+├── condition_taxonomy.yaml        # Decay constants and condition categories
+├── preflight_demo.html                  # Interactive demo — open in browser
+└── requirements.txt
 ```
 
 ---
 
-## Why this matters for ambient AI
+## Background
 
-The clinical AI stack is moving fast. Ambient scribing is largely solved at the encounter level. Longitudinal summarization (Chart Awareness, Patient Recap, Conditions Advisor) is the current frontier.
+**Apoorva Kolhatkar** — Physical Therapist · Certified Professional Coder · MHI Candidate, University of Michigan (May 2026)
 
-The next unsolved problem is **chart trustworthiness** — not summarizing the record, but knowing which parts of it to trust before summarizing.
+Clinical NLP pipeline work at Michigan Medicine (2025): rule-based extraction of surgical staging from 12,000+ breast reconstruction notes, longitudinal complication and treatment timelines relative to surgical stage.
 
-A Conditions Advisor that surfaces a secondary diagnosis based on a copy-forwarded note from 8 months ago is not improving care. It's systematizing a documentation error at scale.
+This project is a public architecture demonstration. It is not a clinical product and has not been validated for clinical use.
 
-This pipeline is an early attempt at the validation layer that longitudinal AI systems will eventually need.
-
----
-
-## Author
-
-**Apoorva Kolhatkar** — Clinical data scientist, Certified Professional Coder, Physical Therapist
-MHI Candidate, University of Michigan (May 2026)
 [LinkedIn](https://linkedin.com/in/apoorvakolhatkar) · [apokol@umich.edu](mailto:apokol@umich.edu)
-
-*Built as a public methodology demonstration grounded in clinical NLP research at Michigan Medicine.*

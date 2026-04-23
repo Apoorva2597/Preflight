@@ -1,0 +1,11 @@
+﻿venv/
+outputs/
+__pycache__/
+*.pyc
+*.pyo
+.env
+etv_demo.html
+data/synthetic/structured_data.json
+setup_project.py
+update_project.py
+requirements-api.txt

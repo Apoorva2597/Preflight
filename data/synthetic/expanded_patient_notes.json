@@ -1,0 +1,500 @@
+[
+  {
+    "patient_id": "SYNTH_001",
+    "description": "Surgical/oncology patient \u2014 copy-forward propagation. Patient self-discontinued metformin (note_5, May 2023) and was switched to sitagliptin. Metformin was never removed from the active medication list or reconciled in subsequent notes (notes 6, 7, 8). Copy-forward error is subtle: sitagliptin is correctly mentioned as the active agent in SOAP assessments, but metformin persists in the background medication list and is referenced in passive documentation. Replicates PMC4476907 pattern: medication list inaccuracy surviving clinical transition. Also includes depression documented in free text (note_6) but absent from ICD codes throughout.",
+    "ground_truth": {
+      "expected_flags": [
+        "medication_copy_forward",
+        "undocumented_condition",
+        "active_management_gap"
+      ],
+      "expected_icd_gaps": [
+        "depression"
+      ],
+      "expected_trust_range": [
+        0.7,
+        0.85
+      ],
+      "error_classification": "Commission error (PMC4476907) \u2014 medication present in record but no longer taken by patient. ECRI 2025 Top Safety Concern: failure to remove discontinued medication from active list during transition.",
+      "literature_basis": [
+        "PMC4476907 \u2014 Accuracy of EMR Medication Reconciliation: >40% of medication errors from inadequate reconciliation; 60% of admitted patients have at least one reconciliation error",
+        "BMJ Quality & Safety \u2014 Medication discrepancies in integrated EHR: commission errors (present in record, not taken) most common in polypharmacy patients; 60% of ambulatory patients affected",
+        "ECRI 2025 Top Patient Safety Concerns \u2014 medication hold/discontinuation documentation failures during care transitions named as persistent preventable hazard",
+        "2022 analysis of 100M+ EHR notes \u2014 50.1% of note text duplicated from prior documentation (AMA STEPS Forward)"
+      ]
+    },
+    "icd_codes": [
+      "C50.912",
+      "Z90.11",
+      "E11.9",
+      "I10"
+    ],
+    "notes": [
+      {
+        "note_id": "note_1",
+        "date": "2023-03-15",
+        "category": "Operative Note",
+        "text": "Patient is a 52-year-old female who underwent left breast mastectomy with immediate tissue expander placement for invasive ductal carcinoma. Sentinel node biopsy performed, 0/3 nodes positive. Procedure was completed without complication. Patient has a history of diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. Patient tolerated procedure well and transferred to recovery in stable condition."
+      },
+      {
+        "note_id": "note_2",
+        "date": "2023-03-18",
+        "category": "Nursing Note",
+        "text": "Post-operative day 3 following left mastectomy and tissue expander placement. Patient reports pain 4/10, managed with oxycodone 5mg q6h PRN. Wound site clean and dry. No signs of infection. Drains patent and productive. Patient has a history of diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. Ambulating with assistance. Foley removed. Voiding adequately. Blood glucose within acceptable range."
+      },
+      {
+        "note_id": "note_3",
+        "date": "2023-03-21",
+        "category": "Discharge Summary",
+        "text": "DISCHARGE DIAGNOSIS: Invasive ductal carcinoma, left breast, status post left mastectomy with tissue expander placement. HOSPITAL COURSE: Patient underwent uncomplicated left mastectomy with immediate tissue expander placement. Post-operative course was uneventful. PAST MEDICAL HISTORY: Diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily. DISCHARGE MEDICATIONS: Oxycodone 5mg q6h PRN pain, metformin 1000mg twice daily, lisinopril 10mg daily, cephalexin 500mg four times daily for 7 days. FOLLOW-UP: Plastic surgery in 2 weeks, oncology in 3 weeks."
+      },
+      {
+        "note_id": "note_4",
+        "date": "2023-04-04",
+        "category": "Clinic Note",
+        "text": "SUBJECTIVE: Two-week post-operative visit following left mastectomy. Patient reports swelling in the left breast area over the past week. Denies fever, chills. Wound otherwise without erythema or drainage. OBJECTIVE: Examination reveals a fluctuant collection at the lateral aspect of the incision consistent with seroma formation. Aspiration performed, 45mL serous fluid removed. ASSESSMENT AND PLAN: Seroma, left breast, status post mastectomy. Will continue to monitor. Tissue expander fill scheduled for next visit. Chronic conditions stable \u2014 diabetes mellitus type 2, well-controlled on metformin 1000mg twice daily. Hypertension managed with lisinopril 10mg daily."
+      },
+      {
+        "note_id": "note_5",
+        "date": "2023-05-10",
+        "category": "Clinic Note",
+        "text": "SUBJECTIVE: Six-week follow-up. Seroma resolved after aspiration. Patient reports GI discomfort, nausea, and loose stools over the past several weeks, which she attributes to metformin. She states she stopped taking metformin approximately two weeks ago and has not restarted. Blood glucose has been running higher at home, readings in the 180-220 range. OBJECTIVE: Wound healed without complication. Tissue expander fill performed today, 60mL added. ASSESSMENT AND PLAN: 1. Left breast, status post mastectomy \u2014 tissue expander fills ongoing. 2. Diabetes mellitus type 2 \u2014 metformin self-discontinued due to GI intolerance. Will discuss alternative agent at next visit, consider switching to sitagliptin. Blood glucose logs reviewed. 3. Hypertension \u2014 lisinopril 10mg daily, BP 132/84 today, acceptable."
+      },
+      {
+        "note_id": "note_6",
+        "date": "2023-06-15",
+        "category": "Clinic Note",
+        "text": "SUBJECTIVE: Patient returns for routine follow-up and tissue expander fill. She reports doing well overall. Denies pain at the expander site. Reports mood has been low since the diagnosis and surgery. Denies active suicidal ideation. Appetite reduced. Sleep disrupted. OBJECTIVE: Expander fill performed, 60mL added. Wound site well-healed. Blood glucose reviewed \u2014 readings have improved since starting sitagliptin 100mg daily last month, now averaging 130-150 mg/dL fasting. ASSESSMENT AND PLAN: 1. Left breast reconstruction ongoing \u2014 expander fills continuing on schedule. 2. Diabetes mellitus type 2 \u2014 sitagliptin 100mg daily initiated last visit following metformin self-discontinuation. Glucose trending toward goal. Metformin 1000mg BID remains listed on active medication list \u2014 not removed at time of transition. 3. Hypertension managed with lisinopril 10mg daily, BP 128/80 today. 4. Depression \u2014 patient reporting low mood, anhedonia, and sleep disruption since diagnosis. PHQ-9 administered, score 12, consistent with moderate depression. Referring to psychiatry. Discussed starting sertraline 50mg daily, patient agrees."
+      },
+      {
+        "note_id": "note_7",
+        "date": "2023-07-20",
+        "category": "Clinic Note",
+        "text": "SUBJECTIVE: Patient presents for final expander fill prior to exchange procedure. Reports mood improved since starting sertraline. Tolerating medication well. Denies GI side effects. Blood glucose stable on sitagliptin. OBJECTIVE: Final tissue expander fill performed, 60mL added. Total fill volume 240mL. Exchange to implant scheduled for next month. ASSESSMENT AND PLAN: 1. Left breast reconstruction \u2014 exchange to implant scheduled. 2. Diabetes mellitus type 2 \u2014 glucose well-controlled on sitagliptin 100mg daily. Metformin 1000mg twice daily remains on active medication list per prior documentation \u2014 patient has not taken metformin since May 2023. 3. Hypertension managed with lisinopril 10mg daily. 4. Depression \u2014 patient responding well to sertraline 50mg daily. Will continue."
+      },
+      {
+        "note_id": "note_8",
+        "date": "2023-10-05",
+        "category": "Clinic Note",
+        "text": "SUBJECTIVE: Three-month post-exchange follow-up. Patient reports excellent cosmetic result and is pleased with outcome. Mood is significantly improved. Denies depressive symptoms. Sertraline continued. OBJECTIVE: Implant well-positioned bilaterally. No complications. HbA1c 7.1% at today's visit, improved from 8.4% at time of metformin discontinuation. ASSESSMENT AND PLAN: 1. Left breast reconstruction \u2014 complete, excellent result. 2. Diabetes mellitus type 2 \u2014 HbA1c 7.1%, well-controlled on sitagliptin 100mg daily. Medication list continues to show metformin 1000mg BID as active \u2014 not reconciled since patient self-discontinued in May 2023. 3. Hypertension managed with lisinopril 10mg daily, BP 126/78 today. 4. Depression \u2014 in remission on sertraline 50mg daily. Continue current regimen."
+      }
+    ],
+    "structured_data": {
+      "medications": [
+        {
+          "medication": "metformin",
+          "dose": "1000mg",
+          "frequency": "BID",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "lisinopril",
+          "dose": "10mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "oxycodone",
+          "dose": "5mg",
+          "frequency": "q6h PRN",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "sitagliptin",
+          "dose": "100mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        }
+      ],
+      "diagnoses": [
+        {
+          "description": "Invasive ductal carcinoma, left breast",
+          "icd_code": "C50.912"
+        },
+        {
+          "description": "Acquired absence of left breast",
+          "icd_code": "Z90.11"
+        },
+        {
+          "description": "Type 2 diabetes mellitus",
+          "icd_code": "E11.9"
+        },
+        {
+          "description": "Essential hypertension",
+          "icd_code": "I10"
+        }
+      ]
+    }
+  },
+  {
+    "patient_id": "SYNTH_002",
+    "description": "Clean internal medicine patient \u2014 well-documented chronic disease management over 12 months. No copy-forward. No ICD gaps. Control case. Reference: MTSamples Diabetes Mellitus SOAP Note, CAD 6-Month Followup, Chronic Medical Conditions Followup patterns.",
+    "ground_truth": {
+      "expected_flags": [],
+      "expected_icd_gaps": [],
+      "expected_trust_range": [
+        0.88,
+        1.0
+      ],
+      "error_classification": "Control case \u2014 no planted errors. Establishes pipeline false positive baseline on clean longitudinal documentation.",
+      "literature_basis": [
+        "Designed to test false positive rate on legitimately stable chronic disease management",
+        "Condition-specific decay constants (\u03bb=0.04 for diabetes, hypertension) should suppress copy-forward suspicion on stable chronic conditions per confidence_scorer.py taxonomy"
+      ]
+    },
+    "icd_codes": [
+      "E11.9",
+      "I10",
+      "E78.5",
+      "Z79.4"
+    ],
+    "notes": [
+      {
+        "note_id": "note_1",
+        "date": "2022-01-10",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Johnson is a 61-year-old male presenting for his quarterly diabetes follow-up. He reports good compliance with metformin 1000mg twice daily and atorvastatin 40mg at bedtime. He monitors blood glucose at home, fasting readings averaging 110-130 mg/dL. He denies polyuria, polydipsia, or visual changes. He reports occasional mild fatigue in the afternoon but otherwise feels well. Blood pressure has been better controlled at home on amlodipine 5mg daily added to his lisinopril last quarter. OBJECTIVE: Weight 198 lbs, BMI 28.4. Blood pressure 136/82 mmHg. Heart rate 72 bpm, regular rhythm. Fundoscopic exam without evidence of retinopathy. Monofilament testing intact bilateral lower extremities. Pedal pulses 2+ bilaterally. Labs reviewed: HbA1c 7.4%, LDL 88 mg/dL, creatinine 1.1 mg/dL, eGFR 68. ASSESSMENT AND PLAN: 1. Diabetes mellitus type 2 \u2014 adequate control, HbA1c 7.4%, at goal for this patient. Continue metformin 1000mg twice daily. 2. Hypertension \u2014 improved on current regimen. Continue lisinopril 20mg daily and amlodipine 5mg daily. 3. Hyperlipidemia \u2014 LDL at goal on atorvastatin 40mg. Continue current regimen. 4. Long-term insulin use \u2014 not applicable, patient on oral agents only. Return in 3 months."
+      },
+      {
+        "note_id": "note_2",
+        "date": "2022-04-12",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Johnson returns for 3-month diabetes and hypertension follow-up. Reports continued compliance with all medications. Home blood glucose readings averaging 115-135 mg/dL fasting. Blood pressure at home averaging 130-138/80-86 mmHg. Denies chest pain, dyspnea, lower extremity edema. No hypoglycemic episodes. Reports increased physical activity, walking 30 minutes daily 4-5 days per week. OBJECTIVE: Weight 194 lbs, down 4 lbs since last visit. Blood pressure 130/78 mmHg. Heart rate 70 bpm. Lungs clear. No peripheral edema. Labs reviewed: HbA1c 7.1%, LDL 82 mg/dL, creatinine 1.0 mg/dL, eGFR 71. ASSESSMENT AND PLAN: 1. Diabetes mellitus type 2 \u2014 excellent progress. HbA1c improved to 7.1% with lifestyle modification and continued metformin 1000mg twice daily. 2. Hypertension \u2014 well controlled. Continue lisinopril 20mg daily and amlodipine 5mg daily. 3. Hyperlipidemia \u2014 LDL at goal. Continue atorvastatin 40mg at bedtime. 4. Patient counseled on continued dietary modifications and physical activity. Return in 3 months."
+      },
+      {
+        "note_id": "note_3",
+        "date": "2022-07-19",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Johnson presents for routine 3-month follow-up. Reports no new complaints. Continues all prescribed medications without difficulty. Home glucose monitoring consistent with prior visits. He mentions he has been on vacation and dietary compliance was somewhat relaxed but has returned to his usual pattern. Blood pressure readings at home slightly higher this week, approximately 140-145/85-90 mmHg. OBJECTIVE: Weight 196 lbs. Blood pressure 142/86 mmHg today. Heart rate 74 bpm. Examination otherwise unremarkable. Labs: HbA1c 7.3%, LDL 79 mg/dL, creatinine 1.1 mg/dL. ASSESSMENT AND PLAN: 1. Diabetes mellitus type 2 \u2014 HbA1c slightly increased to 7.3%, attributed to dietary relaxation during vacation. Patient counseled. Continue metformin 1000mg twice daily. 2. Hypertension \u2014 mildly elevated today, likely related to dietary sodium during vacation. Will not adjust medications at this time. Continue lisinopril 20mg daily and amlodipine 5mg daily. Monitor at next visit. 3. Hyperlipidemia \u2014 LDL stable at goal. Continue atorvastatin 40mg. Return in 3 months."
+      },
+      {
+        "note_id": "note_4",
+        "date": "2022-10-11",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Johnson returns for quarterly follow-up. Reports excellent dietary compliance since last visit. Home blood pressure readings have returned to 128-135/78-84 mmHg. No hypoglycemic episodes. No new symptoms. He asks about the flu vaccine, which is administered today. OBJECTIVE: Weight 193 lbs. Blood pressure 128/80 mmHg. Heart rate 68 bpm. Neurological exam intact. Lower extremity pulses 2+ bilaterally. No peripheral edema. Labs: HbA1c 7.0%, LDL 76 mg/dL, creatinine 1.0 mg/dL, eGFR 72. ASSESSMENT AND PLAN: 1. Diabetes mellitus type 2 \u2014 excellent control. HbA1c 7.0%, at target. Continue metformin 1000mg twice daily. 2. Hypertension \u2014 well controlled on current regimen. Continue lisinopril 20mg daily and amlodipine 5mg daily. 3. Hyperlipidemia \u2014 LDL optimal. Continue atorvastatin 40mg at bedtime. 4. Influenza vaccine administered today. Annual labs ordered including comprehensive metabolic panel, lipid panel, HbA1c, urine microalbumin. Return in 3 months."
+      },
+      {
+        "note_id": "note_5",
+        "date": "2023-01-09",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Johnson presents for annual comprehensive visit and routine 3-month follow-up. Reports feeling well. No new symptoms or complaints. Medications unchanged. Continues to exercise regularly. Dietary compliance good. Reviews annual lab results ordered at last visit. OBJECTIVE: Weight 192 lbs. Blood pressure 126/78 mmHg. Heart rate 70 bpm. Full physical examination performed. Cardiovascular: regular rate and rhythm, no murmurs. Respiratory: clear bilaterally. Abdomen: soft, non-tender. Lower extremities: no edema, pulses intact, sensation intact. Labs reviewed: HbA1c 6.9%, LDL 74 mg/dL, creatinine 1.0 mg/dL, eGFR 73, urine microalbumin negative, TSH within normal limits. ASSESSMENT AND PLAN: 1. Diabetes mellitus type 2 \u2014 outstanding control. HbA1c 6.9%, below target. Continue metformin 1000mg twice daily. No changes needed. 2. Hypertension \u2014 optimally controlled. Continue lisinopril 20mg daily and amlodipine 5mg daily. 3. Hyperlipidemia \u2014 LDL 74, excellent. Continue atorvastatin 40mg at bedtime. 4. All preventive screenings current. Return in 3 months."
+      }
+    ],
+    "structured_data": {
+      "medications": [
+        {
+          "medication": "metformin",
+          "dose": "1000mg",
+          "frequency": "BID",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "lisinopril",
+          "dose": "20mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "amlodipine",
+          "dose": "5mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "atorvastatin",
+          "dose": "40mg",
+          "frequency": "at bedtime",
+          "status": "active",
+          "source": "medication_list"
+        }
+      ],
+      "diagnoses": [
+        {
+          "description": "Type 2 diabetes mellitus",
+          "icd_code": "E11.9"
+        },
+        {
+          "description": "Essential hypertension",
+          "icd_code": "I10"
+        },
+        {
+          "description": "Mixed hyperlipidemia",
+          "icd_code": "E78.5"
+        },
+        {
+          "description": "Long-term use of oral hypoglycemic drugs",
+          "icd_code": "Z79.4"
+        }
+      ]
+    }
+  },
+  {
+    "patient_id": "SYNTH_003",
+    "description": "Primary care patient with atrial fibrillation and COPD \u2014 medication switch not reflected in later notes (warfarin to apixaban), new diagnosis of CKD appears in notes but never coded, COPD exacerbation treated and resolved but note copy-forward continues to reference active exacerbation. Reference: MTSamples Atrial Fibrillation SOAP, COPD Discharge Summary, Chronic Kidney Disease Followup patterns.",
+    "ground_truth": {
+      "expected_flags": [
+        "medication_copy_forward",
+        "undocumented_condition"
+      ],
+      "expected_icd_gaps": [
+        "chronic kidney disease"
+      ],
+      "expected_trust_range": [
+        0.65,
+        0.82
+      ],
+      "error_classification": "Commission error \u2014 anticoagulant copy-forward after documented transition. Pennsylvania Patient Safety Reporting System (ISMP): incomplete medication lists second most common oral anticoagulant error source, especially at care transitions.",
+      "literature_basis": [
+        "Pennsylvania Patient Safety Reporting System \u2014 831 oral anticoagulant errors: incomplete medication lists second most common error source, concentrated at transitions of care",
+        "ECRI 2025 Top Patient Safety Concerns \u2014 anticoagulant transitions and medication list accuracy named as persistent hazards",
+        "2022 analysis of 100M+ EHR notes \u2014 50.1% of note text duplicated from prior documentation"
+      ]
+    },
+    "icd_codes": [
+      "I48.2",
+      "J44.1",
+      "I10",
+      "Z79.01"
+    ],
+    "notes": [
+      {
+        "note_id": "note_1",
+        "date": "2022-06-05",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Ms. Rivera is a 68-year-old female presenting for management of persistent atrial fibrillation, diagnosed 8 months ago. She is currently rate-controlled on metoprolol succinate 50mg daily and anticoagulated on warfarin 5mg daily. INR today is 2.4, within therapeutic range. She also carries a diagnosis of COPD, moderate severity, maintained on tiotropium 18mcg inhaled daily and albuterol inhaler PRN. She reports mild dyspnea on exertion, stable compared to prior visits. Denies chest pain, palpitations, syncope. No recent exacerbations. OBJECTIVE: Blood pressure 138/84 mmHg. Heart rate 74 bpm, irregularly irregular. Oxygen saturation 95% on room air. Respiratory: mild expiratory wheeze bilateral bases. Extremities: trace bilateral ankle edema. Labs: INR 2.4, creatinine 1.3 mg/dL, eGFR 52. ASSESSMENT AND PLAN: 1. Atrial fibrillation, persistent \u2014 rate controlled on metoprolol succinate 50mg daily. Anticoagulation with warfarin 5mg daily, INR therapeutic. 2. COPD, moderate \u2014 stable on tiotropium. Albuterol PRN. Reinforce smoking cessation counseling. 3. Hypertension \u2014 continue current antihypertensive regimen, lisinopril 10mg daily."
+      },
+      {
+        "note_id": "note_2",
+        "date": "2022-08-22",
+        "category": "Emergency Department Note",
+        "text": "CHIEF COMPLAINT: Acute shortness of breath. HISTORY: Ms. Rivera is a 68-year-old female with known COPD and atrial fibrillation who presents to the emergency department with two days of worsening dyspnea, increased sputum production, and low-grade fever to 38.1C. Denies chest pain or hemoptysis. Medications at home: metoprolol succinate 50mg daily, warfarin 5mg daily, tiotropium 18mcg daily, albuterol PRN, lisinopril 10mg daily. OBJECTIVE: Blood pressure 148/90 mmHg. Heart rate 88 bpm, irregularly irregular. Respiratory rate 24. Oxygen saturation 88% on room air, improved to 94% on 2L nasal cannula. Chest X-ray: hyperinflation with no acute infiltrate. ASSESSMENT AND PLAN: COPD exacerbation, moderate severity. Initiated on azithromycin 500mg daily x 5 days, prednisone 40mg daily x 5 days, and nebulized albuterol/ipratropium every 4 hours. Observation overnight. Discharged to home the following morning with improvement in oxygenation to 96% on room air."
+      },
+      {
+        "note_id": "note_3",
+        "date": "2022-09-06",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Ms. Rivera returns two weeks post-exacerbation. Reports complete resolution of dyspnea. Back to baseline functional status. No wheezing or productive cough. Completed steroid taper and antibiotic course without difficulty. She tolerated the prednisone well. OBJECTIVE: Blood pressure 134/82 mmHg. Heart rate 72 bpm, irregularly irregular. Oxygen saturation 96% on room air. Lungs clear to auscultation. No wheeze today. Mild bilateral ankle edema, unchanged. Labs: creatinine 1.5 mg/dL, eGFR 44 \u2014 notable decline from prior value of 1.3/eGFR 52. Discussed with patient, likely related to NSAID use for musculoskeletal pain. Advised to avoid NSAIDs. INR 2.6. ASSESSMENT AND PLAN: 1. COPD exacerbation \u2014 resolved. Continue maintenance tiotropium and albuterol PRN. 2. Atrial fibrillation \u2014 rate controlled, anticoagulation with warfarin 5mg daily, INR therapeutic. 3. Kidney function \u2014 creatinine elevated to 1.5, eGFR 44. Monitoring for CKD. Repeat labs in 6 weeks. 4. Hypertension \u2014 continue lisinopril 10mg daily."
+      },
+      {
+        "note_id": "note_4",
+        "date": "2022-10-18",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Follow-up visit. Patient reports feeling well. No recurrence of respiratory symptoms. INR management has been challenging \u2014 she had a supratherapeutic INR of 3.8 last week after taking ibuprofen for knee pain. After discussion of bleeding risk and the challenges of INR management, we have decided to transition from warfarin to apixaban 5mg twice daily for anticoagulation. Warfarin to be discontinued today. Apixaban initiated. Patient counseled on the importance of twice daily dosing and not missing doses. OBJECTIVE: Blood pressure 130/80 mmHg. Heart rate 76 bpm, irregularly irregular. Oxygen saturation 96% on room air. Labs: creatinine 1.4 mg/dL, eGFR 48 \u2014 slight improvement from prior, but below baseline. ASSESSMENT AND PLAN: 1. Atrial fibrillation \u2014 anticoagulation transitioned from warfarin to apixaban 5mg twice daily. Warfarin discontinued. 2. COPD \u2014 currently stable, no active exacerbation. Continue tiotropium 18mcg daily and albuterol PRN. 3. Chronic kidney disease stage 3b \u2014 eGFR trending between 44-52, consistent with CKD stage 3b. Nephrology referral placed. 4. Hypertension \u2014 continue lisinopril 10mg daily. Renal dosing of apixaban confirmed appropriate."
+      },
+      {
+        "note_id": "note_5",
+        "date": "2022-12-14",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Ms. Rivera presents for 2-month follow-up. She reports tolerating her anticoagulation well without bleeding complications. No dyspnea at rest. Mild exertional dyspnea on climbing stairs, stable from prior. OBJECTIVE: Blood pressure 132/82 mmHg. Heart rate 74 bpm, irregularly irregular. Oxygen saturation 97% on room air. No wheeze. Labs: creatinine 1.4 mg/dL, eGFR 48. ASSESSMENT AND PLAN: 1. Atrial fibrillation \u2014 rate controlled on metoprolol succinate 50mg daily. Anticoagulation with warfarin 5mg daily, therapeutic. 2. COPD \u2014 currently stable, COPD exacerbation ongoing management. Continue tiotropium 18mcg daily and albuterol PRN. 3. Hypertension \u2014 continue lisinopril 10mg daily. 4. Renal function stable. Follow-up with nephrology next month."
+      },
+      {
+        "note_id": "note_6",
+        "date": "2023-02-28",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Ms. Rivera returns for routine follow-up. No acute complaints. Reports nephrology saw her last month and is monitoring kidney function quarterly. No new medications from nephrology. She reports feeling well overall. OBJECTIVE: Blood pressure 128/78 mmHg. Heart rate 72 bpm, irregularly irregular. Oxygen saturation 97% on room air. Labs: creatinine 1.3 mg/dL, eGFR 51 \u2014 mild improvement. ASSESSMENT AND PLAN: 1. Atrial fibrillation \u2014 rate controlled. Anticoagulation with warfarin 5mg daily, therapeutic. 2. COPD \u2014 stable, no active exacerbation. Continue tiotropium 18mcg daily and albuterol PRN. 3. Chronic kidney disease \u2014 eGFR improving, now 51. Continue monitoring. 4. Hypertension \u2014 well controlled on lisinopril 10mg daily."
+      }
+    ],
+    "structured_data": {
+      "medications": [
+        {
+          "medication": "metoprolol succinate",
+          "dose": "50mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "warfarin",
+          "dose": "5mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "tiotropium",
+          "dose": "18mcg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "albuterol",
+          "dose": "2 puffs",
+          "frequency": "PRN",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "lisinopril",
+          "dose": "10mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        }
+      ],
+      "diagnoses": [
+        {
+          "description": "Persistent atrial fibrillation",
+          "icd_code": "I48.2"
+        },
+        {
+          "description": "COPD, moderate",
+          "icd_code": "J44.1"
+        },
+        {
+          "description": "Essential hypertension",
+          "icd_code": "I10"
+        },
+        {
+          "description": "Long-term use of anticoagulants",
+          "icd_code": "Z79.01"
+        }
+      ]
+    }
+  },
+  {
+    "patient_id": "SYNTH_004",
+    "description": "Complex comorbidity patient \u2014 CHF and type 2 diabetes. Temporal contradiction: furosemide dose increased in note_4 but prior note documents patient was taken off diuretics. New diagnosis of diabetic nephropathy mentioned in specialist note but not in PCP notes. Medication reconciliation gap across providers. Reference: MTSamples CHF Discharge Summary, Cardiology Progress Note, Chronic Kidney Disease Followup patterns.",
+    "ground_truth": {
+      "expected_flags": [
+        "medication_copy_forward",
+        "undocumented_condition"
+      ],
+      "expected_icd_gaps": [
+        "diabetic nephropathy"
+      ],
+      "expected_trust_range": [
+        0.6,
+        0.8
+      ],
+      "error_classification": "Commission error (metformin) + omission error (diabetic nephropathy). Metformin held per nephrology recommendation but persisting on structured medication list. Diabetic nephropathy documented in specialist note, absent from PCP structured record.",
+      "literature_basis": [
+        "ECRI 2025 \u2014 held medication documentation failures: failure to restart or discontinue held medications as circumstances require leads to patient harm",
+        "BMJ Quality & Safety \u2014 errors of commission most common in patients on multiple medications",
+        "Swiss Medical Weekly 2025 \u2014 free-text diagnoses in general practice frequently undocumented in structured EMR components; prevalence estimates vary significantly by data source",
+        "PMC9759969 \u2014 EHR problem list completeness audit: diagnoses documented in free text frequently absent from coded problem lists one year post-EHR implementation"
+      ]
+    },
+    "icd_codes": [
+      "I50.9",
+      "E11.9",
+      "I10",
+      "N18.3"
+    ],
+    "notes": [
+      {
+        "note_id": "note_1",
+        "date": "2022-03-10",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Okafor is a 71-year-old male with known congestive heart failure with reduced ejection fraction (EF 35% on last echo) and type 2 diabetes presenting for routine cardiology follow-up. He reports mild dyspnea on exertion when climbing one flight of stairs. No orthopnea or paroxysmal nocturnal dyspnea. Lower extremity edema is mild, 1+ bilateral. Current medications: carvedilol 12.5mg twice daily, lisinopril 5mg daily, furosemide 20mg daily, spironolactone 25mg daily, insulin glargine 20 units at bedtime, metformin 500mg twice daily. OBJECTIVE: Blood pressure 128/76 mmHg. Heart rate 64 bpm, regular. Weight 198 lbs. JVD absent. Bibasilar crackles, mild. 1+ pitting edema bilateral ankles. Labs: BNP 320 pg/mL, creatinine 1.6 mg/dL, eGFR 42, sodium 138, potassium 4.2. ASSESSMENT AND PLAN: 1. CHF with reduced EF \u2014 stable, NYHA class II. Optimize guideline-directed medical therapy. Continue carvedilol, lisinopril, spironolactone, furosemide. 2. Diabetes mellitus type 2 \u2014 continue insulin glargine and metformin. Refer to endocrinology given suboptimal control. 3. Hypertension \u2014 adequately controlled on current regimen."
+      },
+      {
+        "note_id": "note_2",
+        "date": "2022-05-24",
+        "category": "Hospital Discharge Summary",
+        "text": "DISCHARGE DIAGNOSIS: Acute decompensated congestive heart failure. HOSPITAL COURSE: Mr. Okafor is a 71-year-old male admitted with 3-day history of progressive dyspnea, orthopnea, and weight gain of 8 lbs. He was found to be in acute decompensated CHF. He was treated with IV furosemide 80mg twice daily with good diuretic response, losing 7 lbs during the hospitalization. During admission, creatinine rose from 1.6 to 2.1 mg/dL, prompting nephrology consultation. Nephrology noted findings consistent with diabetic nephropathy and cardiorenal syndrome. Recommendation was to hold furosemide at discharge and monitor renal function closely as outpatient. Metformin was held given elevated creatinine and will require reassessment. DISCHARGE MEDICATIONS: Carvedilol 12.5mg twice daily, lisinopril 5mg daily \u2014 held furosemide and spironolactone at discharge per nephrology recommendation, insulin glargine 20 units at bedtime. Metformin held. FOLLOW-UP: Cardiology in 1 week, nephrology in 2 weeks."
+      },
+      {
+        "note_id": "note_3",
+        "date": "2022-06-02",
+        "category": "Cardiology Follow-up",
+        "text": "SUBJECTIVE: Mr. Okafor presents one week post-discharge following admission for acute decompensated CHF. He reports significant improvement in dyspnea. Weight at home down an additional 3 lbs since discharge. Lower extremity swelling improved. No orthopnea. He is currently off furosemide and spironolactone per nephrology guidance. Creatinine at post-discharge lab check was 1.7 mg/dL, improved from 2.1 at discharge. OBJECTIVE: Weight 188 lbs, down 10 lbs from admission weight. Blood pressure 122/74 mmHg. Heart rate 60 bpm. JVD absent. Lungs clear. Trace edema bilateral ankles. ASSESSMENT AND PLAN: 1. CHF, recovering from acute decompensation \u2014 doing well off diuretics for now. Renal function improving. Will re-introduce furosemide at low dose only if edema worsens. 2. Diabetes \u2014 metformin held. Continue insulin glargine 20 units at bedtime. Endocrinology follow-up pending. 3. Renal function \u2014 improving, continue to monitor. Nephrology follow-up next week."
+      },
+      {
+        "note_id": "note_4",
+        "date": "2022-07-15",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Okafor presents for monthly follow-up. Reports worsening bilateral leg swelling over the past 10 days. Weight has increased 5 lbs since last visit. Dyspnea has returned on exertion. Denies orthopnea. OBJECTIVE: Weight 193 lbs. Blood pressure 140/88 mmHg. Heart rate 68 bpm. 2+ pitting edema bilateral lower extremities to mid-calf. Bibasilar crackles, moderate. BNP 580 pg/mL. Creatinine 1.5 mg/dL, eGFR 46. ASSESSMENT AND PLAN: 1. CHF \u2014 fluid retention returning. Resuming furosemide 40mg daily given clinical deterioration and improved creatinine. 2. Diabetes mellitus type 2, on insulin glargine 20 units nightly and metformin 500mg twice daily. 3. Hypertension \u2014 BP elevated today, increasing lisinopril to 10mg daily. 4. Diabetic nephropathy \u2014 eGFR 46, monitoring. Nephrology co-managing."
+      },
+      {
+        "note_id": "note_5",
+        "date": "2022-09-20",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Okafor presents for follow-up. Lower extremity edema improved on furosemide 40mg daily. Weight stable at 190 lbs. Dyspnea improved, now only on significant exertion. He reports endocrinology adjusted his insulin to glargine 24 units at bedtime and added liraglutide 0.6mg daily for improved glucose control and potential cardiovascular benefit. He is tolerating liraglutide well, mild initial nausea resolved. OBJECTIVE: Blood pressure 128/78 mmHg. Heart rate 64 bpm. 1+ edema bilateral ankles. Labs: creatinine 1.5 mg/dL, eGFR 46, HbA1c 8.1%, BNP 290 pg/mL. ASSESSMENT AND PLAN: 1. CHF \u2014 improving on furosemide 40mg daily, carvedilol 12.5mg BID, lisinopril 10mg daily, spironolactone 25mg daily. 2. Diabetes mellitus type 2 \u2014 HbA1c 8.1%. Endocrinology managing insulin regimen. Insulin glargine 20 units nightly, metformin 500mg twice daily per current medication list. 3. Diabetic nephropathy \u2014 stable eGFR 46. Continue monitoring with nephrology. 4. Hypertension \u2014 controlled on current regimen."
+      },
+      {
+        "note_id": "note_6",
+        "date": "2022-12-05",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Mr. Okafor presents for quarterly follow-up. Reports stable symptoms. Weight fluctuating 2-3 lbs, well within acceptable range. No acute dyspnea. Tolerating all medications. He reports endocrinology has been adjusting his insulin \u2014 currently on glargine 28 units at bedtime and liraglutide 1.2mg daily. He remains off metformin per nephrology guidance given creatinine levels. OBJECTIVE: Blood pressure 126/76 mmHg. Heart rate 66 bpm. Trace bilateral ankle edema. Labs: creatinine 1.4 mg/dL, eGFR 49, HbA1c 7.4%, BNP 220 pg/mL. ASSESSMENT AND PLAN: 1. CHF \u2014 stable, NYHA class II. Continue current guideline-directed therapy. 2. Diabetes mellitus type 2 \u2014 HbA1c improved to 7.4% on insulin glargine 20 units nightly, metformin 500mg twice daily per medication list. Endocrinology co-managing. 3. Diabetic nephropathy \u2014 eGFR stable at 49. Continue nephrology follow-up. 4. Hypertension \u2014 well controlled."
+      },
+      {
+        "note_id": "note_7",
+        "date": "2023-03-14",
+        "category": "Office Visit",
+        "text": "SUBJECTIVE: Annual comprehensive review. Mr. Okafor reports he has been doing well over the past several months. No hospitalizations since the admission last year. Weight stable. He is adherent to his medication regimen. He has been working with a dietician on low-sodium diet. Quality of life has improved significantly. OBJECTIVE: Weight 189 lbs. Blood pressure 124/74 mmHg. Heart rate 64 bpm. No peripheral edema. Lungs clear. Echo performed last month: EF improved to 42%. Labs: creatinine 1.3 mg/dL, eGFR 52, HbA1c 7.2%, BNP 160 pg/mL. ASSESSMENT AND PLAN: 1. CHF with recovered EF \u2014 EF improved from 35% to 42%, consistent with improved cardiomyopathy. Continue all current medications. 2. Diabetes mellitus type 2 \u2014 HbA1c 7.2%, well controlled. Current regimen: insulin glargine 20 units at bedtime, metformin 500mg twice daily per medication reconciliation. Liraglutide 1.2mg daily per endocrinology. 3. Diabetic nephropathy \u2014 eGFR improving to 52. Continue monitoring. 4. Hypertension \u2014 optimally controlled."
+      }
+    ],
+    "structured_data": {
+      "medications": [
+        {
+          "medication": "carvedilol",
+          "dose": "12.5mg",
+          "frequency": "BID",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "lisinopril",
+          "dose": "10mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "furosemide",
+          "dose": "40mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "spironolactone",
+          "dose": "25mg",
+          "frequency": "daily",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "insulin glargine",
+          "dose": "20 units",
+          "frequency": "at bedtime",
+          "status": "active",
+          "source": "medication_list"
+        },
+        {
+          "medication": "metformin",
+          "dose": "500mg",
+          "frequency": "BID",
+          "status": "active",
+          "source": "medication_list"
+        }
+      ],
+      "diagnoses": [
+        {
+          "description": "Heart failure, unspecified",
+          "icd_code": "I50.9"
+        },
+        {
+          "description": "Type 2 diabetes mellitus",
+          "icd_code": "E11.9"
+        },
+        {
+          "description": "Essential hypertension",
+          "icd_code": "I10"
+        },
+        {
+          "description": "Chronic kidney disease, stage 3",
+          "icd_code": "N18.3"
+        }
+      ]
+    }
+  }
+]

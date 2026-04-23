@@ -431,12 +431,19 @@ def score_entity(
     corroboration_events: Optional[list[dict]] = None,
     contradictions: Optional[list[dict]] = None,
     institution_has_maintenance_protocol: bool = False,
+    reference_date: Optional[str] = None,
 ) -> dict:
     """
     Compute composite confidence score for a single clinical entity.
 
     Returns a fully auditable score object with component breakdown,
     classification, copy-forward suspicion, and recommendation.
+
+    reference_date: the date to measure temporal decay from. Should be the
+    latest note date in the record (not today) so that scores reflect the
+    chart's internal state rather than how much time has passed since the
+    pipeline was run. Defaults to today if not provided (backwards compatible,
+    but will produce low decay scores on historical records).
     """
     corroboration_events = corroboration_events or []
     contradictions = contradictions or []
@@ -444,8 +451,9 @@ def score_entity(
     # Classify condition
     condition_category, cat_config = classify_condition(entity_text)
 
-    # Months since last verification
-    months_since = _months_between(last_verified_date, datetime.now().strftime("%Y-%m-%d"))
+    # Months since last verification — anchored to latest note date, not today.
+    ref = reference_date or datetime.now().strftime("%Y-%m-%d")
+    months_since = _months_between(last_verified_date, ref)
 
     # Component 1: Base score
     base_score = compute_base_score(source_tier, institution_has_maintenance_protocol)
@@ -511,8 +519,19 @@ def score_all_entities(
     Score all extracted entities for a patient.
     Returns list of scored entity objects, sorted by composite score ascending
     (lowest confidence first — highest review priority).
+
+    Reference date for temporal decay is the latest note date in the record,
+    not today's date. This ensures scores reflect the clinical picture at the
+    time of the most recent encounter, not how much time has passed since then.
+    Using today's date would cause all entities from historical records to decay
+    toward zero regardless of what the chart actually shows — a 2023 chart run
+    in 2026 would look maximally stale even if it was internally consistent.
     """
     scored = []
+
+    # Anchor temporal decay to latest note date in the record.
+    # Falls back to today only if no notes have parseable dates.
+    reference_date = _latest_note_date(notes)
 
     for note_data in extracted_entities:
         note_id = note_data["note_id"]
@@ -520,9 +539,11 @@ def score_all_entities(
         entities = note_data.get("entities", {})
 
         for entity_type, entity_list in entities.items():
-            if entity_type == "transformer_entities":
+            if entity_type in ("transformer_entities", "resolved_statuses"):
                 continue
             for entity in entity_list:
+                if not isinstance(entity, dict):
+                    continue
                 if entity.get("negated"):
                     continue
 
@@ -531,7 +552,15 @@ def score_all_entities(
                     notes=notes,
                     first_seen_date=note_date,
                     last_verified_date=note_date,
-                    source_tier="tier_3",  # Default — problem list / structured entry
+                    reference_date=reference_date,
+                    # source_tier hardcoded to tier_3 (free-text clinical notes).
+                    # Tier assignment requires knowing the note source — problem list
+                    # (tier_1), specialist letter (tier_2), patient-reported (tier_4).
+                    # That metadata is not available in the current input schema.
+                    # Tier_3 is the conservative default: avoids inflating scores
+                    # for sources we cannot verify. Upgrading this requires source
+                    # metadata in the note dict — a defined future input schema change.
+                    source_tier="tier_3",
                 )
                 result["note_id"] = note_id
                 result["note_date"] = note_date
@@ -541,6 +570,29 @@ def score_all_entities(
     # Sort by composite score ascending — lowest confidence = highest review priority
     scored.sort(key=lambda x: x["composite_score"])
     return scored
+
+
+def _latest_note_date(notes: list[dict]) -> str:
+    """
+    Return the date string of the most recent note in the record.
+    Used as the temporal reference point for decay calculations so that
+    scores reflect the chart's internal state, not elapsed real-world time.
+    Falls back to today if no parseable dates are found.
+    """
+    latest = None
+    for note in notes:
+        date_str = note.get("date")
+        if not date_str:
+            continue
+        for fmt in ["%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"]:
+            try:
+                d = datetime.strptime(date_str, fmt)
+                if latest is None or d > latest:
+                    latest = d
+                break
+            except ValueError:
+                continue
+    return latest.strftime("%Y-%m-%d") if latest else datetime.now().strftime("%Y-%m-%d")
 
 
 # ── Utilities ─────────────────────────────────────────────────────────────────

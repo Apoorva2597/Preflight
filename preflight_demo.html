@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preflight — EHR Temporal Validator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --hdr:#1e1d1a;
+  --hdr-b:#2e2d28;
+  --hdr-t:#f0ede6;
+  --hdr-m:#9a9888;
+  --bg:#f2f0ea;
+  --surface:#faf8f4;
+  --surface2:#f0ede6;
+  --border:#d8d5cc;
+  --text:#000000;
+  --text2:#0f0e0c;
+  --red:#b82a1a;--red-bg:#fdf0ee;--red-b:#e0a898;--red-dk:#6a1810;
+  --amber:#a86000;--amber-bg:#fdf3dc;--amber-b:#e0c068;--amber-dk:#5a3800;
+  --green:#1a6e3a;--green-bg:#e8f5ee;--green-b:#90d0a8;--green-dk:#0a3820;
+  --blue:#1a4a80;--blue-bg:#e8f0fb;--blue-dk:#0a2a50;
+  --f:'Outfit',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--f);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:var(--hdr);border-bottom:1px solid var(--hdr-b);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 36px;}
+.hdr-l{display:flex;align-items:center;}
+.hdr-logo{font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--hdr-t);}
+.hdr-div{width:1px;height:16px;background:var(--hdr-b);margin:0 16px;}
+.hdr-prod{font-size:13px;font-weight:500;color:var(--hdr-m);}
+.hdr-run{font-size:11px;font-weight:500;color:var(--hdr-m);}
+.hdr-sub{background:#18170f;border-bottom:1px solid var(--hdr-b);padding:8px 36px;font-size:12px;font-weight:600;color:#a09a88;}
+
+/* WORKLIST */
+.wl{max-width:940px;margin:0 auto;padding:36px 28px;}
+.wl-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.03em;margin-bottom:4px;}
+.wl-sub{font-size:14px;font-weight:500;color:var(--text2);margin-bottom:22px;}
+
+.strip{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:18px;overflow:hidden;}
+.strip-lbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text);padding:10px 16px;border-right:1px solid var(--border);white-space:nowrap;}
+.strip-items{display:flex;flex:1;}
+.si{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--text);padding:10px 18px;border-right:1px solid var(--border);}
+.si:last-child{border-right:none;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+.tbl{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.tbl-head{display:grid;grid-template-columns:2.2fr .9fr 1fr 1.6fr .3fr;padding:9px 22px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.th{font-size:10px;font-weight:800;color:var(--text);letter-spacing:.1em;text-transform:uppercase;}
+.tbl-row{display:grid;grid-template-columns:2.2fr .9fr 1fr 1.6fr .3fr;padding:15px 22px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .1s;}
+.tbl-row:last-child{border-bottom:none;}
+.tbl-row:hover{background:var(--surface2);}
+.row-name{font-size:14px;font-weight:700;color:var(--text);}
+.row-spec{font-size:12px;font-weight:500;color:var(--text2);margin-top:2px;}
+.score-wrap{display:flex;flex-direction:column;gap:5px;}
+.row-score{font-size:17px;font-weight:800;line-height:1;}
+.row-score.g{color:var(--green);}
+.row-score.a{color:var(--amber);}
+.row-score.r{color:var(--red);}
+.bar-track{height:3px;background:var(--border);border-radius:2px;width:54px;}
+.bar-fill{height:3px;border-radius:2px;}
+.row-flags{font-size:13px;font-weight:700;color:var(--text2);}
+.row-flags.none{color:var(--green);}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;padding:4px 11px;border-radius:4px;letter-spacing:.03em;text-transform:uppercase;}
+.pill.g{background:var(--green-bg);color:var(--green-dk);border:1px solid var(--green-b);}
+.pill.a{background:var(--amber-bg);color:var(--amber-dk);border:1px solid var(--amber-b);}
+.pill.r{background:var(--red-bg);color:var(--red-dk);border:1px solid var(--red-b);}
+.row-arr{font-size:14px;font-weight:700;color:var(--text2);text-align:right;}
+.wl-foot{margin-top:14px;font-size:11px;font-weight:600;color:var(--text2);text-align:right;}
+
+/* PATIENT VIEW */
+.pv{max-width:880px;margin:0 auto;padding:32px 28px;display:none;}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text2);background:none;border:none;cursor:pointer;padding:0 0 22px;font-family:var(--f);}
+.back:hover{color:var(--text);}
+
+/* HERO */
+.hero{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.hero-top{display:grid;grid-template-columns:1fr 210px;}
+.hero-info{padding:24px 26px;border-right:1px solid var(--border);}
+.hero-ey{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;}
+.hero-title{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:4px;}
+.hero-meta{font-size:13px;font-weight:500;color:var(--text2);}
+.hero-sb{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center;}
+.hero-sb-lbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text2);margin-bottom:10px;}
+.hero-score{font-size:68px;font-weight:800;line-height:1;letter-spacing:-.04em;}
+.hero-score.g{color:var(--green);}
+.hero-score.a{color:var(--amber);}
+.hero-score.r{color:var(--red);}
+.hero-score-sub{font-size:11px;font-weight:800;margin-top:10px;padding:4px 12px;border-radius:4px;display:inline-block;letter-spacing:.04em;text-transform:uppercase;}
+.hero-score-sub.g{background:var(--green-bg);color:var(--green-dk);}
+.hero-score-sub.a{background:var(--amber-bg);color:var(--amber-dk);}
+.hero-score-sub.r{background:var(--red-bg);color:var(--red-dk);}
+.hero-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
+.hs{text-align:center;padding:16px 12px;border-right:1px solid var(--border);}
+.hs:last-child{border-right:none;}
+.hs-v{font-size:30px;font-weight:800;letter-spacing:-.03em;}
+.hs-v.r{color:var(--red);}
+.hs-v.a{color:var(--amber);}
+.hs-v.g{color:var(--green);}
+.hs-l{font-size:10px;font-weight:800;color:var(--text2);margin-top:3px;letter-spacing:.08em;text-transform:uppercase;}
+.hero-callout{padding:12px 22px;font-size:13px;font-weight:700;border-top:1px solid var(--border);}
+.hero-callout.w{background:var(--amber-bg);color:var(--amber-dk);}
+.hero-callout.r{background:var(--red-bg);color:var(--red-dk);}
+
+/* CLEAN STATE */
+.clean{background:var(--green-bg);border:1.5px solid var(--green-b);border-radius:6px;padding:48px 32px;text-align:center;margin-bottom:14px;}
+.clean-ic{width:56px;height:56px;border-radius:50%;background:var(--surface);border:2px solid var(--green-b);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:22px;font-weight:800;color:var(--green);}
+.clean-title{font-size:26px;font-weight:800;color:var(--green);letter-spacing:-.02em;margin-bottom:6px;}
+.clean-sub{font-size:14px;font-weight:600;color:var(--green);margin-bottom:24px;}
+.clean-list{display:flex;flex-direction:column;gap:8px;max-width:400px;margin:0 auto 22px;}
+.clean-item{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:600;color:var(--green-dk);padding:10px 16px;background:var(--surface);border-radius:4px;border:1px solid var(--green-b);}
+.ck{font-size:13px;font-weight:800;color:var(--green);flex-shrink:0;}
+.clean-badge{font-size:14px;font-weight:800;color:var(--green-dk);padding:9px 22px;background:var(--surface);border-radius:4px;display:inline-block;border:1.5px solid var(--green-b);letter-spacing:.04em;}
+
+/* SECTIONS */
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:14px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;background:var(--surface2);border-bottom:1px solid var(--border);}
+.sec-title{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--text);}
+.sec-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;}
+.sec-badge.r{background:var(--red-bg);color:var(--red-dk);}
+.sec-badge.a{background:var(--amber-bg);color:var(--amber-dk);}
+
+/* SIGNAL CARDS */
+.sig{border-bottom:1px solid var(--border);overflow:hidden;}
+.sig:last-child{border-bottom:none;}
+.sig.h{border-left:3px solid var(--red);}
+.sig.m{border-left:3px solid var(--amber);}
+.sig.h .sig-top{background:#fffaf9;}
+.sig.m .sig-top{background:#fffdf7;}
+.sig-top{padding:15px 18px 12px;}
+.sig-sev{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:4px;display:inline-block;margin-bottom:10px;}
+.sig-sev.h{background:var(--red-bg);color:var(--red-dk);}
+.sig-sev.m{background:var(--amber-bg);color:var(--amber-dk);}
+.sig-what{font-size:14px;font-weight:700;color:var(--text);line-height:1.45;}
+.sig-rows{border-top:1px solid var(--border);}
+.sig-row{display:grid;grid-template-columns:175px 1fr;border-bottom:1px solid var(--border);}
+.sig-row:last-child{border-bottom:none;}
+.sig-rlbl{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:12px 14px;display:flex;align-items:flex-start;line-height:1.4;color:var(--text);}
+.sig-rval{font-size:13px;font-weight:600;padding:12px 18px;line-height:1.6;color:var(--text2);}
+.impact-row{background:#fff8f7;}
+.impact-row .sig-rlbl{background:#fde8e4;color:var(--red-dk);}
+.impact-row .sig-rval{color:var(--red-dk);font-weight:700;font-size:14px;}
+.behavior-row .sig-rlbl{background:var(--blue-bg);color:var(--blue-dk);}
+.behavior-row .sig-rval{color:var(--blue-dk);font-weight:600;}
+.sig-code{font-family:ui-monospace,'Cascadia Code','Fira Code',monospace;font-size:11.5px;font-weight:500;line-height:1.7;color:#1a3a5c;}
+
+/* QUALITY */
+.qi{display:flex;align-items:flex-start;gap:12px;padding:13px 20px;border-bottom:1px solid var(--border);}
+.qi:last-child{border-bottom:none;}
+.qdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.qt{font-size:14px;font-weight:600;color:var(--text2);line-height:1.5;}
+
+/* TECH */
+.tech-btn{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;color:var(--text2);background:none;border:none;cursor:pointer;padding:14px 20px;text-transform:uppercase;letter-spacing:.1em;width:100%;text-align:left;font-family:var(--f);}
+.tech-btn:hover{color:var(--text);}
+.tech-body{display:none;border-top:1px solid var(--border);}
+.tech-body.open{display:block;}
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);}
+.tech-item{background:var(--surface);padding:12px 18px;}
+.tech-k{font-size:10px;font-weight:800;color:var(--text2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em;}
+.tech-v{font-size:14px;font-weight:700;color:var(--text);}
+.tech-foot{padding:12px 18px;border-top:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text2);}
+.pv-foot{font-size:12px;font-weight:600;color:var(--text2);text-align:right;margin-top:10px;}
+
+@keyframes scoreIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.score-anim{animation:scoreIn .35s ease forwards;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <span class="hdr-logo">PREFLIGHT</span>
+    <div class="hdr-div"></div>
+    <span class="hdr-prod">Pre-Generation Validation Layer</span>
+  </div>
+  <span class="hdr-run">Pipeline run · SYNTH cohort · Apr 2025 · 4 charts processed</span>
+</div>
+<div class="hdr-sub">This system evaluates chart reliability before AI-generated output.</div>
+
+<div class="wl" id="wl">
+  <div class="wl-title">Chart Processing Queue</div>
+  <div class="wl-sub">Pre-generation chart consistency check · 4 records processed · Synthetic cohort Click any record to view findings.</div>
+  <div class="strip">
+    <span class="strip-lbl">System Status</span>
+    <div class="strip-items">
+      <span class="si"><span class="dot" style="background:var(--green)"></span>1 ready for generation</span>
+      <span class="si"><span class="dot" style="background:var(--amber)"></span>2 review required</span>
+      <span class="si"><span class="dot" style="background:var(--red)"></span>1 high risk / generation not recommended</span>
+    </div>
+  </div>
+  <div class="tbl">
+    <div class="tbl-head">
+      <div class="th">Patient</div>
+      <div class="th">Reliability</div>
+      <div class="th">Signals</div>
+      <div class="th">Status</div>
+      <div class="th"></div>
+    </div>
+    <div class="tbl-row" onclick="show(0)">
+      <div><div class="row-name">Leonard McCoy, MD</div><div class="row-spec">Surgical / Oncology · 8 notes</div></div>
+      <div><div class="score-wrap"><span class="row-score a">65%</span><div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--amber)"></div></div></div></div>
+      <div><span class="row-flags">3 flagged</span></div>
+      <div><span class="pill a"><span class="dot" style="background:var(--amber)"></span>Review Required</span></div>
+      <div class="row-arr">→</div>
+    </div>
+    <div class="tbl-row" onclick="show(1)">
+      <div><div class="row-name">James T. Kirk</div><div class="row-spec">Primary Care · 5 notes</div></div>
+      <div><div class="score-wrap"><span class="row-score g">✓</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--green)"></div></div></div></div>
+      <div><span class="row-flags none">0 flagged</span></div>
+      <div><span class="pill g"><span class="dot" style="background:var(--green)"></span>No signals detected</span></div>
+      <div class="row-arr">→</div>
+    </div>
+    <div class="tbl-row" onclick="show(2)">
+      <div><div class="row-name">Spock</div><div class="row-spec">Cardiology / Pulmonology · 6 notes</div></div>
+      <div><div class="score-wrap"><span class="row-score r">50%</span><div class="bar-track"><div class="bar-fill" style="width:50%;background:var(--red)"></div></div></div></div>
+      <div><span class="row-flags">3 flagged</span></div>
+      <div><span class="pill r"><span class="dot" style="background:var(--red)"></span>High Risk</span></div>
+      <div class="row-arr">→</div>
+    </div>
+    <div class="tbl-row" onclick="show(3)">
+      <div><div class="row-name">Emeka Okafor</div><div class="row-spec">Cardiology / Endocrinology · 7 notes</div></div>
+      <div><div class="score-wrap"><span class="row-score a">80%</span><div class="bar-track"><div class="bar-fill" style="width:80%;background:var(--amber)"></div></div></div></div>
+      <div><span class="row-flags">3 flagged</span></div>
+      <div><span class="pill a"><span class="dot" style="background:var(--red)"></span>High Risk</span></div>
+      <div class="row-arr">→</div>
+    </div>
+  </div>
+  <div class="wl-foot">Preflight pipeline run · 2025-04-07 21:42 UTC · ehr-temporal-validator v0.1.0</div>
+</div>
+
+<div class="pv" id="pv">
+  <button class="back" onclick="goBack()">← Back to queue</button>
+  <div id="pv-content"></div>
+  <div class="pv-foot" id="pv-foot"></div>
+</div>
+
+<script>
+var D=[
+  {name:"Leonard McCoy, MD",spec:"Surgical / Oncology",notes:8,range:"Mar - Oct 2023",trust:65,tc:"a",tl:"Review Required",cl:"w",
+   co:"Review required: temporal contradictions and uncoded diagnosis detected.",
+   stats:[{v:"3",c:"r",l:"Risk Signals"},{v:"1",c:"r",l:"Copy-Forward"},{v:"1",c:"a",l:"Uncoded Dx"}],
+   sigs:[
+     {lv:"h",wh:"Metformin listed as active after patient reported self-discontinuation in note_5. Sitagliptin initiated but metformin never removed from active medication list.",
+      im:"AI-generated medication summaries will include metformin as an active medication despite documented discontinuation. Affects medication reconciliation output and any downstream medication-based decision support.",
+      bh:'→ signal: {"action":"suppress","target":"metformin","list":"active_medications","reason":"copy_forward_suspected"}\n→ signal: {"action":"flag_unverified","target":"metformin","requires":"clinical_confirmation"}'},
+     {lv:"h",wh:"Temporal contradictions detected across 3 clinical events. Treatment and diagnosis ordering inconsistencies present in the longitudinal record.",
+      im:"AI output may reference treatments without correct clinical context, producing documentation that appears incomplete or clinically inconsistent.",
+      bh:'→ signal: {"action":"flag_violation","type":"temporal_ordering","in":"generation_audit_log"}\n→ signal: {"action":"require_review","before":"generating_timeline"}'},
+     {lv:"m",wh:"Depression documented in clinical notes (note_6, PHQ-9 score 12, sertraline initiated). Absent from ICD codes throughout the record.",
+      im:"AI systems using structured data as primary source will omit depression from generated summaries, care gap analysis, and quality measures. Invisible to any ICD-based downstream system.",
+      bh:'→ signal: {"action":"flag_unverified","target":"depression","source":"free_text_only"}\n→ signal: {"action":"exclude","from":"structured_summary","pending":"clinical_coding"}'}
+   ],
+   qi:[
+     {c:"var(--red)",t:"Metformin copy-forward confirmed: listed as active across notes 6, 7, 8 after documented self-discontinuation in note_5."},
+     {c:"var(--red)",t:"3 temporal contradictions detected in longitudinal record — clinical event ordering inconsistencies require review."},
+     {c:"var(--amber)",t:"Depression present only in free text. Invisible to any ICD-based downstream system or quality measure."}
+   ],
+   tech:[{k:"Trust Score",v:"0.65"},{k:"Avg Entity Confidence",v:"0.45"},{k:"Copy-Forward Flags",v:"1 detected"},{k:"Temporal Contradictions",v:"3 detected"},{k:"ICD Divergence",v:"1 condition (depression)"},{k:"Ollama Resolution",v:"16 entities resolved"}]
+  },
+  {name:"James T. Kirk",spec:"Primary Care / Diabetes / Hypertension",notes:5,range:"Jan - Aug 2023",trust:null,tc:"g",tl:"No signals detected",cl:"",clean:true,
+   co:"No reliability signals found. Score reflects absence of detected problems, not confirmed reliability.",
+   stats:[{v:"0",c:"g",l:"Risk Signals"},{v:"0",c:"g",l:"Copy-Forward"},{v:"0",c:"g",l:"Uncoded Dx"}],
+   qi:[],
+   tech:[{k:"Trust Score",v:"0.65"},{k:"Avg Entity Confidence",v:"0.42"},{k:"Copy-Forward Flags",v:"0 detected"},{k:"Temporal Contradictions",v:"0 detected"},{k:"ICD Divergence",v:"None"},{k:"Ollama Resolution",v:"0 candidates"}]
+  },
+  {name:"Spock",spec:"Cardiology / Pulmonology / Nephrology",notes:6,range:"Jun - Feb 2023",trust:50,tc:"r",tl:"High Risk",cl:"r",
+   co:"Lowest reliability score in cohort. Multiple temporal contradictions and uncoded diagnoses detected.",
+   stats:[{v:"2",c:"r",l:"Risk Signals"},{v:"4",c:"r",l:"Contradictions"},{v:"2",c:"a",l:"Uncoded Dx"}],
+   sigs:[
+     {lv:"h",wh:"4 temporal contradictions detected — the highest in the cohort. Clinical event ordering inconsistencies span medication transitions and diagnosis sequencing.",
+      im:"AI output may present clinical events out of sequence, producing a timeline that is internally inconsistent and potentially misleading for clinical decision support.",
+      bh:'→ signal: {"action":"flag_violation","type":"temporal_ordering","count":4}\n→ signal: {"action":"require_review","before":"generating_timeline","priority":"high"}'},
+     {lv:"m",wh:"Chronic kidney disease documented in clinical notes across multiple visits. Never assigned an ICD code or added to the structured problem list.",
+      im:"AI systems using structured data as primary source will not account for CKD. Affects anticoagulant dosing context, care gap generation, and HCC risk adjustment.",
+      bh:'→ signal: {"action":"flag_unverified","target":"chronic_kidney_disease","source":"free_text_only"}\n→ signal: {"action":"exclude","from":"structured_output","pending":"clinical_coding"}'}
+   ],
+   qi:[
+     {c:"var(--red)",t:"4 temporal contradictions detected — highest in cohort. Clinical event ordering requires clinical review before AI generation."},
+     {c:"var(--red)",t:"Anticoagulant transition documented (warfarin to apixaban) — downstream notes show inconsistent anticoagulation documentation."},
+     {c:"var(--amber)",t:"Chronic kidney disease present only in free text across multiple notes. Invisible to any ICD-based downstream system."}
+   ],
+   tech:[{k:"Trust Score",v:"0.50"},{k:"Avg Entity Confidence",v:"0.45"},{k:"Copy-Forward Flags",v:"0 named"},{k:"Temporal Contradictions",v:"4 detected"},{k:"ICD Divergence",v:"2 conditions (CKD)"},{k:"Ollama Resolution",v:"21 entities resolved"}]
+  },
+  {name:"Emeka Okafor",spec:"Cardiology / Endocrinology / Nephrology",notes:7,range:"Mar 2022 - Mar 2023",trust:80,tc:"a",tl:"Review Required",cl:"w",
+   co:"Review required: medication reconciliation gaps across providers detected.",
+   stats:[{v:"3",c:"r",l:"Risk Signals"},{v:"1",c:"r",l:"Copy-Forward"},{v:"2",c:"r",l:"Contradictions"}],
+   sigs:[
+     {lv:"h",wh:"Insulin glargine listed as active after dose changes documented by endocrinology. Structured medication list reflects outdated dosing not reconciled across providers.",
+      im:"AI-generated medication summaries may reflect incorrect insulin dosing. High-alert medication — dosing errors carry direct patient safety risk.",
+      bh:'→ signal: {"action":"flag_unverified","target":"insulin_glargine","reason":"dose_reconciliation_gap"}\n→ signal: {"action":"require_confirmation","before":"including_in_medication_summary"}'},
+     {lv:"h",wh:"Metformin held per nephrology at discharge (note_2) due to elevated creatinine. Reappears as active on structured medication list from note_4 onward. Patient confirms to cardiologist it was stopped — cardiologist's own note contradicts itself.",
+      im:"AI systems reading the medication list will surface metformin as active for a patient where it is contraindicated by renal function. Direct clinical safety signal.",
+      bh:'→ signal: {"action":"suppress","target":"metformin","list":"active_medications","reason":"nephrology_hold_documented"}\n→ signal: {"action":"flag_conflict","type":"provider_reconciliation_gap"}'},
+     {lv:"m",wh:"2 temporal contradictions detected across the multi-provider longitudinal record.",
+      im:"Complex multi-provider records with medication transitions across specialties are high risk for AI summarization errors when the longitudinal record is inconsistent.",
+      bh:'→ signal: {"action":"flag_violation","type":"temporal_ordering","count":2}\n→ signal: {"action":"require_review","before":"generating_summary"}'}
+   ],
+   qi:[
+     {c:"var(--red)",t:"Insulin glargine copy-forward: dose listed inconsistently across cardiology and endocrinology notes — structured list not reconciled."},
+     {c:"var(--red)",t:"Metformin held per nephrology (note_2) reappears as active on medication list from note_4. Patient confirms discontinuation but cardiologist's note contradicts itself."},
+     {c:"var(--amber)",t:"2 temporal contradictions detected. Multi-provider record requires reconciliation before AI generation."}
+   ],
+   tech:[{k:"Trust Score",v:"0.80"},{k:"Avg Entity Confidence",v:"0.41"},{k:"Copy-Forward Flags",v:"1 detected"},{k:"Temporal Contradictions",v:"2 detected"},{k:"ICD Divergence",v:"0 conditions"},{k:"Ollama Resolution",v:"43 entities resolved"}]
+  }
+];
+
+function animScore(el,target){
+  var start=null,dur=550;
+  function step(ts){
+    if(!start)start=ts;
+    var p=Math.min((ts-start)/dur,1);
+    var ease=1-Math.pow(1-p,3);
+    el.textContent=Math.round(ease*target)+'%';
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function show(i){
+  var p=D[i];
+  document.getElementById('wl').style.display='none';
+  document.getElementById('pv').style.display='block';
+  window.scrollTo(0,0);
+  var h='';
+
+  h+='<div class="hero"><div class="hero-top">';
+  h+='<div class="hero-info">';
+  h+='<div class="hero-ey">'+p.name+' · '+p.notes+' notes · '+p.range+'</div>';
+  h+='<div class="hero-title">'+p.spec+'</div>';
+  h+='<div class="hero-meta">Pre-generation chart check</div>';
+  h+='</div>';
+  h+='<div class="hero-sb">';
+  h+='<div class="hero-sb-lbl">Chart Reliability</div>';
+  if(p.trust===null){
+    h+='<div class="hero-score g" style="font-size:36px;padding-top:8px">No signals<br>detected</div>';
+    h+='<div class="hero-score-sub g">Low signal record</div>';
+  } else {
+    h+='<div class="hero-score '+p.tc+' score-anim" id="sc">0%</div>';
+    h+='<div class="hero-score-sub '+p.tc+'">'+p.tl+'</div>';
+  }
+  h+='</div></div>';
+  h+='<div class="hero-stats">';
+  p.stats.forEach(function(s){h+='<div class="hs"><div class="hs-v '+s.c+'">'+s.v+'</div><div class="hs-l">'+s.l+'</div></div>';});
+  h+='</div>';
+  if(p.co)h+='<div class="hero-callout '+p.cl+'">'+p.co+'</div>';
+  h+='</div>';
+
+  if(p.clean){
+    h+='<div class="clean"><div class="clean-ic">✓</div>';
+    h+='<div class="clean-title">No reliability issues detected</div>';
+    h+='<div class="clean-sub">This chart is internally consistent across all '+p.notes+' notes.</div>';
+    h+='<div class="clean-list">';
+    ['No copy-forward patterns detected','Medication list consistent across all visits','Structured and narrative data aligned','ICD codes match note content throughout','No temporal ordering violations'].forEach(function(t){
+      h+='<div class="clean-item"><span class="ck">✓</span>'+t+'</div>';
+    });
+    h+='</div><div class="clean-badge">✓&nbsp;&nbsp;Safe for AI generation</div></div>';
+  }
+
+  if(p.sigs&&p.sigs.length){
+    h+='<div class="sec"><div class="sec-head"><span class="sec-title">Pre-Generation Risk Signals</span><span class="sec-badge r">'+p.sigs.length+' signals</span></div>';
+    p.sigs.forEach(function(s){
+      var bh=s.bh.split('\n').join('<br>');
+      h+='<div class="sig '+s.lv+'"><div class="sig-top"><span class="sig-sev '+s.lv+'">'+(s.lv==='h'?'High':'Moderate')+'</span><div class="sig-what">'+s.wh+'</div></div>';
+      h+='<div class="sig-rows"><div class="sig-row impact-row"><div class="sig-rlbl">Impact on AI Output</div><div class="sig-rval">'+s.im+'</div></div>';
+      h+='<div class="sig-row behavior-row"><div class="sig-rlbl">Recommended Signal Output</div><div class="sig-rval sig-code">'+bh+'</div></div></div></div>';
+    });
+    h+='</div>';
+  }
+
+  if(p.qi&&p.qi.length){
+    h+='<div class="sec"><div class="sec-head"><span class="sec-title">Data Quality Signals</span><span class="sec-badge a">'+p.qi.length+' signals</span></div>';
+    p.qi.forEach(function(q){h+='<div class="qi"><div class="qdot" style="background:'+q.c+'"></div><div class="qt">'+q.t+'</div></div>';});
+    h+='</div>';
+  }
+
+  h+='<div class="sec"><button class="tech-btn" onclick="toggleTech(this)"><span class="ta">▶</span>&nbsp;&nbsp;Technical details</button>';
+  h+='<div class="tech-body"><div class="tech-grid">';
+  p.tech.forEach(function(t){h+='<div class="tech-item"><div class="tech-k">'+t.k+'</div><div class="tech-v">'+t.v+'</div></div>';});
+  h+='</div><div class="tech-foot">Preflight v0.1.0 · GLiNER urchade/gliner_mediumv2.1 · Ollama llama3.2 · Synthetic cohort</div></div></div>';
+
+  document.getElementById('pv-content').innerHTML=h;
+  document.getElementById('pv-foot').textContent='Generated by Preflight v0.1.0 · Synthetic cohort · Pipeline run Apr 2025';
+  if(p.trust!==null){animScore(document.getElementById('sc'),p.trust);}
+}
+
+function goBack(){
+  document.getElementById('wl').style.display='block';
+  document.getElementById('pv').style.display='none';
+  window.scrollTo(0,0);
+}
+
+function toggleTech(btn){
+  var b=btn.nextElementSibling;
+  var o=b.classList.toggle('open');
+  btn.querySelector('.ta').textContent=o?'▼':'▶';
+}
+</script>
+</body>
+</html>
